@@ -401,6 +401,28 @@ const questions = [
 let current = 0, score = 0, answered = false;
 let userAnswers = new Array(questions.length).fill(null);
 
+/* ── Shuffle options once at load time ─────────────────────
+   Stores the shuffled order per question so Back/Next stays
+   consistent. userAnswers stores the shuffled index.
+──────────────────────────────────────────────────────────── */
+(function shuffleAllOptions() {
+  questions.forEach(q => {
+    // Build indexed pairs, shuffle, then remap ans
+    const indexed = q.opts.map((opt, i) => ({ opt, i }));
+    for (let j = indexed.length - 1; j > 0; j--) {
+      const k = Math.floor(Math.random() * (j + 1));
+      [indexed[j], indexed[k]] = [indexed[k], indexed[j]];
+    }
+    const oldAns = q.ans;
+    q.opts = indexed.map(x => x.opt);
+    q.ans  = indexed.findIndex(x => x.i === oldAns);
+  });
+})();
+
+function getScore() {
+  return userAnswers.filter((ua, i) => ua !== null && ua !== -1 && ua === questions[i].ans).length;
+}
+
 /* ============================================================
    RENDER
 ============================================================ */
@@ -409,7 +431,7 @@ function renderQuestion() {
   const q = questions[current];
   document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
   document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
-  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${getScore()}`;
   document.getElementById('phaseLabel').textContent = DIFF[q.phase];
   document.getElementById('nextBtn').disabled = true;
   document.getElementById('backBtn').disabled = current === 0;
@@ -440,7 +462,6 @@ function selectAns(idx) {
   if (answered) return;
   answered = true;
   userAnswers[current] = idx;
-  if (idx === questions[current].ans) score++;
   revealAnswer(idx);
 }
 
@@ -454,14 +475,11 @@ function revealAnswer(idx) {
   });
   document.getElementById('explanation').classList.add('show');
   document.getElementById('nextBtn').disabled = false;
-  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${getScore()}`;
 }
 
 function prevQuestion() {
   if (current === 0) return;
-  if (userAnswers[current] !== null && userAnswers[current] !== -1)
-    if (userAnswers[current] === questions[current].ans) score--;
-  userAnswers[current] = null;
   current--;
   renderQuestion();
 }
@@ -479,12 +497,13 @@ function showResults() {
   document.getElementById('quiz').style.display = 'none';
   document.getElementById('results').style.display = 'block';
 
+  const score = getScore();
   const pct = score / questions.length;
   setTimeout(() => {
     document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
     document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
   }, 100);
-  document.getElementById('scoreBig').textContent = score;
+  document.getElementById('scoreBig').textContent = getScore();
 
   const v = pct>=.9 ? ['🏆 Collections Master!',  'Flawless — you understand Python collections deeply.']
           : pct>=.75? ['🎯 Sharp Instincts',        'Strong performance — a couple of edge cases to review.']
@@ -532,7 +551,7 @@ function showResults() {
 }
 
 function restartQuiz() {
-  current=0; score=0; answered=false;
+  current=0; answered=false;
   userAnswers=new Array(questions.length).fill(null);
   document.getElementById('results').style.display='none';
   document.getElementById('quiz').style.display='block';
