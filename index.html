@@ -33,6 +33,7 @@
     --c4: #fb923c;   /* Loops      — orange */
     --c5: #f43f5e;   /* Mock       — rose   */
     --c6: #e879f9;   /* Exceptions — fuchsia */
+    --c7: #34d399;   /* Snippets   — emerald */
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -365,12 +366,28 @@
       </div>
     </a>
 
-    <!-- 7. Mock — featured full-width, still locked -->
+    <!-- 7. Snippets -->
+    <a class="card" href="snippets.html" style="--accent-color: var(--c7)">
+      <div class="card-line"></div>
+      <span class="card-num">07</span>
+      <div class="card-icon">🧩</div>
+      <div class="card-title">Snippets</div>
+      <div class="card-desc">Read and predict the output of real code snippets. Covers variables, functions, OOP, loops, and edge-case behaviour.</div>
+      <div class="card-footer">
+        <div class="card-meta">
+          <span class="badge accent q-count" data-src="snippets.html">… Qs</span>
+          <span class="badge">All Levels</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 8. Mock — featured full-width, still locked -->
     <a class="card featured soon" href="mock.html" style="--accent-color: var(--c5)">
       <div class="card-line"></div>
       <div class="card-icon">🏆</div>
       <div class="card-body">
-        <span class="card-num" style="position:static;font-size:.72rem;color:var(--muted);">07</span>
+        <span class="card-num" style="position:static;font-size:.72rem;color:var(--muted);">08</span>
         <div class="card-title">Full Mock Test</div>
         <div class="card-desc">All topics combined. Timed, scored, and analysed — just like a real exam. Take this last to benchmark yourself.</div>
         <div class="card-footer">
@@ -396,26 +413,14 @@
 ─────────────────────────────────────────────────────────── */
 document.querySelectorAll('.q-count[data-src]').forEach(badge => {
   const src = badge.dataset.src;
-
   fetch(src)
-    .then(response => {
-      if (!response.ok) throw new Error("Failed to fetch");
-      return response.text();
-    })
+    .then(r => r.text())
     .then(html => {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
+      const doc = new DOMParser().parseFromString(html, 'text/html');
       const meta = doc.querySelector('meta[name="quiz-count"]');
-
-      badge.textContent = meta?.content
-        ? `${meta.content} Qs`
-        : '— Qs';
+      badge.textContent = meta ? `${meta.content} Qs` : '— Qs';
     })
-    .catch(error => {
-      console.error("Error loading:", src, error);
-      badge.textContent = '— Qs';
-    });
+    .catch(() => { badge.textContent = '— Qs'; });
 });
 </script>
 
