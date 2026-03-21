@@ -3,190 +3,150 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🐍 Database Quiz — Python Quiz Hub</title>
-<meta name="quiz-count" content="20"/>
+<title>🐍 Database — Python Quiz Hub</title>
+<meta name="quiz-count" content="40"/>
 <style>
-  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
-  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
-
-  :root {
-    --bg:      #0d0f14;
-    --surface: #14171f;
-    --card:    #1a1e28;
-    --border:  #252a38;
-    --accent:  #a78bfa;
-    --accent2: #ffb547;
-    --text:    #e8eaf0;
-    --muted:   #6b7290;
-    --correct: #00c97a;
-    --wrong:   #ff4f6e;
-    --radius:  12px;
-  }
-
-  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-
-  body {
-    background:var(--bg);
-    color:var(--text);
-    font-family:'Syne',sans-serif;
-    min-height:100vh;
-    overflow-x:hidden;
-  }
-
-  body::before {
-    content:'';
-    position:fixed; inset:0;
-    background-image:
-      linear-gradient(rgba(167,139,250,.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(167,139,250,.03) 1px, transparent 1px);
-    background-size:40px 40px;
-    pointer-events:none; z-index:0;
-  }
-
-  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
-
-  /* ── QUIZ TOP ── */
-  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
-  .back-home-btn {
-    background:var(--card); border:1px solid var(--border);
-    border-radius:8px; padding:8px 14px; color:var(--muted);
-    font-family:'Syne',sans-serif; font-size:.82rem; cursor:pointer;
-    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-    transition:border-color .15s, color .15s; white-space:nowrap;
-  }
-  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
-  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
-  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
-
-  /* ── PROGRESS ── */
-  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
-  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#a78bfa,#6366f1); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
-  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
-
-  .phase-label {
-    display:inline-flex; align-items:center;
-    background:var(--border); border-radius:99px;
-    padding:4px 14px; font-size:.78rem; font-weight:700;
-    letter-spacing:.08em; text-transform:uppercase;
-    color:var(--accent); margin-bottom:20px;
-  }
-
-  /* ── QUESTION CARD ── */
-  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
-  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; }
-  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
-
-  /* ── SPECIAL BADGES ── */
-  .tricky-tag {
-    display:inline-flex; align-items:center; gap:6px;
-    background:rgba(167,139,250,.12); border:1px solid rgba(167,139,250,.28);
-    border-radius:6px; padding:4px 10px; font-size:.72rem;
-    font-family:'Space Mono',monospace; color:var(--accent);
-    margin-bottom:10px; letter-spacing:.04em;
-  }
-  .lab-tag {
-    display:inline-flex; align-items:center; gap:6px;
-    background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.28);
-    border-radius:6px; padding:4px 10px; font-size:.72rem;
-    font-family:'Space Mono',monospace; color:#818cf8;
-    margin-bottom:10px; letter-spacing:.04em;
-  }
-
-  /* ── OPTIONS ── */
-  .options { display:grid; gap:9px; margin-top:14px; }
-  .option-btn {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:8px; padding:11px 16px; text-align:left;
-    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
-    cursor:pointer; display:flex; align-items:center; gap:12px;
-    transition:border-color .15s, background .15s, transform .1s;
-  }
-  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#1a1828; transform:translateX(3px); }
-  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
-  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
-  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
-  .option-btn.wrong   { border-color:var(--wrong);   background:rgba(255,79,110,.08); }
-  .option-btn.wrong .opt-key   { background:var(--wrong);   color:#fff; }
-  .option-btn:disabled { cursor:default; }
-
-  /* ── EXPLANATION ── */
-  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
-  .explanation.show { display:block; }
-  .explanation strong { color:var(--accent); }
-  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
-
-  /* ── NAV ── */
-  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
-  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
-  .btn:active { transform:scale(.97); }
-  .btn-primary { background:linear-gradient(135deg,#a78bfa,#6366f1); color:#fff; box-shadow:0 4px 20px rgba(167,139,250,.25); }
-  .btn-primary:hover { box-shadow:0 6px 28px rgba(167,139,250,.4); }
-  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
-  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
-
-  /* ── RESULTS ── */
-  #results { display:none; }
-  .score-ring-wrap { text-align:center; margin-bottom:40px; }
-  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
-  .score-ring svg { transform:rotate(-90deg); }
-  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
-  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
-  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
-  .verdict-sub { color:var(--muted); font-size:.9rem; }
-
-  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
-  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
-  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
-  .phase-stat-score { font-size:1.5rem; font-weight:800; }
-  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
-  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
-
-  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
-  .review-header span { flex:1; height:1px; background:var(--border); }
-
-  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
-  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
-  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
-  .review-top { display:flex; align-items:flex-start; gap:12px; }
-  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
-  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
-  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
-  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
-  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
-  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
-  .review-detail .lbl { font-weight:700; margin-right:4px; }
-  .your-ans { color:var(--wrong); }
-  .corr-ans { color:var(--correct); }
-  .expl-text { color:#8a93b0; margin-top:4px; }
-  .expl-text strong { color:var(--accent); font-weight:600; }
-  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
-  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
-  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
-
-  @media(max-width:560px){
-    .question-card { padding:20px 16px; }
-    .q-code { font-size:.74rem; }
-  }
+  @font-face{font-family:'Syne';src:local('Futura'),local('Century Gothic'),local('Trebuchet MS');font-weight:400 800;}
+  @font-face{font-family:'Space Mono';src:local('Courier New'),local('Courier');font-weight:400 700;}
+  :root{--bg:#0d0f14;--surface:#14171f;--card:#1a1e28;--border:#252a38;--accent:#a78bfa;--text:#e8eaf0;--muted:#6b7290;--correct:#00c97a;--wrong:#ff4f6e;--radius:12px;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,0,0,.0) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .wrapper{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:40px 20px 80px;}
+  /* PART SELECTOR */
+  #partSelector{}
+  .sel-header{text-align:center;margin-bottom:36px;}
+  .sel-back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:.78rem;border:1px solid var(--border);padding:7px 14px;border-radius:8px;margin-bottom:24px;transition:border-color .15s,color .15s;}
+  .sel-back:hover{border-color:var(--accent);color:var(--accent);}
+  .sel-icon{font-size:2.8rem;margin-bottom:12px;display:block;}
+  .sel-title{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:6px;}
+  .sel-sub{font-family:'Space Mono',monospace;font-size:.78rem;color:var(--muted);}
+  .parts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:32px;}
+  @media(max-width:500px){.parts-grid{grid-template-columns:1fr;}}
+  .part-card{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:28px 24px;cursor:pointer;text-align:left;transition:border-color .2s,transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
+  .part-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:0 10px 32px rgba(0,0,0,.3);}
+  .part-num{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;}
+  .part-name{font-size:1.25rem;font-weight:800;color:var(--accent);margin-bottom:8px;}
+  .part-desc{font-size:.82rem;color:var(--muted);line-height:1.55;margin-bottom:18px;}
+  .part-meta{display:flex;gap:8px;flex-wrap:wrap;}
+  .part-pill{font-family:'Space Mono',monospace;font-size:.68rem;padding:3px 10px;border-radius:99px;background:var(--border);color:var(--muted);}
+  .part-pill.hi{background:rgba(255,255,255,.06);color:var(--accent);border:1px solid rgba(255,255,255,.1);}
+  /* QUIZ */
+  #quizView{display:none;}
+  .quiz-top{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+  .back-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:border-color .15s,color .15s;white-space:nowrap;}
+  .back-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .quiz-title-block h2{font-size:1.1rem;font-weight:800;}
+  .quiz-title-block p{font-size:.75rem;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px;}
+  .progress-bar-wrap{background:var(--border);border-radius:99px;height:6px;margin-bottom:10px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,#a78bfa,#6366f1);border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1);}
+  .progress-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:28px;}
+  .phase-label{display:inline-flex;align-items:center;background:var(--border);border-radius:99px;padding:4px 14px;font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;}
+  .question-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 28px 24px;margin-bottom:16px;animation:fadeUp .35s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .q-number{font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);margin-bottom:10px;letter-spacing:.06em;}
+  .q-text{font-size:1.05rem;font-weight:600;line-height:1.5;}
+  .q-code{font-family:'Space Mono',monospace;background:#0a0c11;border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:.82rem;color:#7dd3fc;margin:12px 0 18px;white-space:pre;overflow-x:auto;}
+  .options{display:grid;gap:9px;margin-top:14px;}
+  .option-btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 16px;text-align:left;color:var(--text);font-family:'Syne',sans-serif;font-size:.92rem;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .15s,background .15s,transform .1s;}
+  .option-btn:hover:not(:disabled){border-color:var(--accent);background:#181820;transform:translateX(3px);}
+  .opt-key{min-width:26px;height:26px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;color:var(--muted);transition:background .15s,color .15s;}
+  .option-btn.correct{border-color:var(--correct);background:rgba(0,201,122,.08);}
+  .option-btn.correct .opt-key{background:var(--correct);color:#000;}
+  .option-btn.wrong{border-color:var(--wrong);background:rgba(255,79,110,.08);}
+  .option-btn.wrong .opt-key{background:var(--wrong);color:#fff;}
+  .option-btn:disabled{cursor:default;}
+  .explanation{margin-top:14px;background:#0f1219;border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:12px 16px;font-size:.87rem;line-height:1.6;color:#b0b8cc;display:none;animation:fadeUp .25s ease;}
+  .explanation.show{display:block;}
+  .explanation strong{color:var(--accent);}
+  .explanation code{font-family:'Space Mono',monospace;background:#1a1e28;padding:1px 5px;border-radius:4px;font-size:.8em;color:#7dd3fc;}
+  .nav{display:flex;gap:12px;justify-content:flex-end;margin-top:28px;}
+  .btn{padding:11px 28px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;border:none;transition:transform .1s,box-shadow .2s;}
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:linear-gradient(135deg,#a78bfa,#6366f1);color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+  .btn-primary:hover{box-shadow:0 6px 28px rgba(0,0,0,.4);}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  /* RESULTS */
+  #resultsView{display:none;}
+  .score-ring-wrap{text-align:center;margin-bottom:40px;}
+  .score-ring{position:relative;width:180px;height:180px;margin:0 auto 16px;}
+  .score-ring svg{transform:rotate(-90deg);}
+  .score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .score-big{font-size:2.8rem;font-weight:800;line-height:1;}
+  .score-sub{font-size:.78rem;color:var(--muted);font-family:'Space Mono',monospace;margin-top:4px;}
+  .verdict{font-size:1.4rem;font-weight:800;margin-bottom:6px;}
+  .verdict-sub{color:var(--muted);font-size:.9rem;}
+  .phase-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:32px 0;}
+  .phase-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;}
+  .phase-stat-name{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
+  .phase-stat-score{font-size:1.5rem;font-weight:800;}
+  .phase-stat-bar{height:4px;background:var(--border);border-radius:99px;margin-top:8px;overflow:hidden;}
+  .phase-stat-fill{height:100%;border-radius:99px;transition:width .8s .2s;}
+  .review-header{font-size:1.1rem;font-weight:700;margin:32px 0 16px;display:flex;align-items:center;gap:10px;}
+  .review-header span{flex:1;height:1px;background:var(--border);}
+  .review-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:12px;}
+  .review-item.r-correct{border-color:rgba(0,201,122,.3);}
+  .review-item.r-wrong{border-color:rgba(255,79,110,.3);}
+  .review-top{display:flex;align-items:flex-start;gap:12px;}
+  .review-badge{min-width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;}
+  .r-correct .review-badge{background:rgba(0,201,122,.2);color:var(--correct);}
+  .r-wrong .review-badge{background:rgba(255,79,110,.2);color:var(--wrong);}
+  .review-q{font-weight:600;font-size:.9rem;line-height:1.45;}
+  .review-q code{font-family:'Space Mono',monospace;background:#0a0c11;padding:1px 5px;border-radius:4px;font-size:.78em;color:#7dd3fc;}
+  .review-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.83rem;color:var(--muted);line-height:1.6;}
+  .review-detail .lbl{font-weight:700;margin-right:4px;}
+  .your-ans{color:var(--wrong);} .corr-ans{color:var(--correct);}
+  .expl-text{color:#8a93b0;margin-top:4px;}
+  .expl-text strong{color:var(--accent);font-weight:600;}
+  .expl-text code{font-family:'Space Mono',monospace;background:#0a0c11;padding:1px 5px;border-radius:4px;font-size:.8em;color:#7dd3fc;}
+  .results-nav{display:flex;gap:12px;justify-content:center;margin-top:40px;flex-wrap:wrap;}
+  @media(max-width:560px){.question-card{padding:20px 16px;}.q-code{font-size:.74rem;}}
 </style>
 </head>
 <body>
 <div class="wrapper">
 
-  <!-- QUIZ -->
-  <div id="quiz">
+  <div id="partSelector">
+    <div class="sel-header">
+      <a class="sel-back" href="index.html">← Home</a><br>
+      <span class="sel-icon">🗄️</span>
+      <div class="sel-title">Database</div>
+      <div class="sel-sub">20 + 20 questions · sqlite3 · CRUD · SQL integration · two parts</div>
+    </div>
+    <div class="parts-grid">
+      <div class="part-card" onclick="startPart(1)">
+        <div class="part-num">Part 01</div>
+        <div class="part-name">Core Concepts</div>
+        <div class="part-desc">sqlite3, cursors, CRUD operations, commit, parameterized queries</div>
+        <div class="part-meta">
+          <span class="part-pill hi">20 Questions</span>
+          <span class="part-pill">Foundations → Peak</span>
+        </div>
+      </div>
+      <div class="part-card" onclick="startPart(2)">
+        <div class="part-num">Part 02</div>
+        <div class="part-name">Exam Practice</div>
+        <div class="part-desc">Reference exam-aligned: AVG, COUNT, GROUP BY, subqueries, rollback trap</div>
+        <div class="part-meta">
+          <span class="part-pill hi">20 Questions</span>
+          <span class="part-pill">Exam-Aligned</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="quizView">
     <div class="quiz-top">
-      <a class="back-home-btn" href="index.html">← Home</a>
+      <button class="back-btn" onclick="goBack()">← Parts</button>
       <div class="quiz-title-block">
-        <h2>🗄️ Database</h2>
-        <p>20 questions · sqlite3 · CRUD · Python-SQL integration</p>
+        <h2 id="quizPartTitle"></h2>
+        <p id="quizPartSub"></p>
       </div>
     </div>
     <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
     <div class="progress-label">
-      <span id="progressText">Question 1 of 20</span>
+      <span id="progressText">Question 1</span>
       <span id="scoreTrack">Score: 0</span>
     </div>
     <div id="phaseLabel" class="phase-label"></div>
@@ -197,25 +157,15 @@
     </div>
   </div>
 
-  <!-- RESULTS -->
-  <div id="results">
+  <div id="resultsView">
     <div class="score-ring-wrap">
       <div class="score-ring">
         <svg width="180" height="180" viewBox="0 0 180 180">
           <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
-          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
-            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
-          <defs>
-            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#a78bfa"/>
-              <stop offset="100%" stop-color="#6366f1"/>
-            </linearGradient>
-          </defs>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs>
         </svg>
-        <div class="score-ring-text">
-          <div class="score-big" id="scoreBig">—</div>
-          <div class="score-sub">/ 20</div>
-        </div>
+        <div class="score-ring-text"><div class="score-big" id="scoreBig">—</div><div class="score-sub" id="scoreDenom">/ 20</div></div>
       </div>
       <div class="verdict" id="verdict"></div>
       <div class="verdict-sub" id="verdictSub"></div>
@@ -224,330 +174,276 @@
     <div class="review-header">📋 Full Answer Analysis <span></span></div>
     <div id="reviewList"></div>
     <div class="results-nav">
-      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
-      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+      <button class="btn btn-ghost" onclick="goBack()">← Back to Parts</button>
+      <button class="btn btn-primary" onclick="retakeQuiz()">↺ Retake</button>
     </div>
   </div>
-
 </div>
+
 <script>
-/* ============================================================
-   DATA — Database Mock (20 Qs)
-   phase: 0=🟢 Foundations, 1=🟡 Intermediate, 2=🔴 Peak
-   tricky / lab flags for badge rendering
-============================================================ */
-const ROUNDS = ['🟢 Round 1: Foundations', '🟡 Round 2: Intermediate', '🔴 Round 3: The Peak'];
+const ROUNDS = ['🟢 Round 1: Foundations','🟡 Round 2: Intermediate','🔴 Round 3: The Peak'];
 
-const questions = [
+const PARTS = {
+  1: { label:'Part 1 — Core Concepts', sub:'sqlite3, cursors, CRUD operations, commit, parameterized queries', questions:[
+  {phase:0,text:"Which standard Python module is used for SQLite?",opts:["sql_python","sqlite3","db_connect","mysql_lib"],ans:1,expl:`<code>sqlite3</code> is Python's built-in SQLite module — no install needed.`},
+  {phase:0,text:"What is the output?",code:`import sqlite3\nconn = sqlite3.connect(':memory:')\nprint(type(conn))`,opts:["class 'Connection'","class 'Database'","class 'Session'","class 'Cursor'"],ans:0,expl:`<code>connect()</code> returns a <code>Connection</code> object. Full output: <code>&lt;class 'sqlite3.Connection'&gt;</code>.`},
+  {phase:0,text:"Which object executes SQL commands in Python?",opts:["Connection","Bridge","Cursor","Executor"],ans:2,expl:`A <strong>Cursor</strong> executes SQL. Create with <code>conn.cursor()</code>.`},
+  {phase:0,text:"What does cursor.fetchone() do?",code:`cursor.execute("SELECT * FROM users")\nrow = cursor.fetchone()`,opts:["Deletes first row","Retrieves one row","Counts all rows","Clears the table"],ans:1,expl:`<code>fetchone()</code> retrieves <strong>exactly one row</strong> as a tuple.`},
+  {phase:0,text:"To save changes permanently to the database:",opts:["conn.save()","conn.commit()","conn.store()","conn.freeze()"],ans:1,expl:`<code>conn.commit()</code> flushes the transaction to disk.`},
+  {phase:0,text:"What is the correct SQL to create a table?",opts:["MAKE TABLE user...","CREATE user TABLE...","CREATE TABLE user...","NEW TABLE user..."],ans:2,expl:`SQL: <code>CREATE TABLE table_name (columns)</code>.`},
+  {phase:0,text:"Why is the trailing comma needed in (val1,)?",opts:["Separates queries","Creates a tuple","Prevents SQL errors","Ends the statement"],ans:1,expl:`<code>(val1,)</code> creates a <strong>single-element tuple</strong>. Without the comma it's just parentheses.`},
+  {phase:0,text:"Which method retrieves all remaining rows?",opts:["cursor.get_all()","cursor.fetchmany()","cursor.fetchall()","cursor.pull_all()"],ans:2,expl:`<code>fetchall()</code> returns all remaining rows as a list of tuples.`},
+  {phase:0,text:"What happens if you don't call conn.close()?",opts:["Database gets deleted","Resources remain leaked","Data is auto-committed","Nothing happens"],ans:1,expl:`Unclosed connections <strong>leak resources</strong> — file handles and memory stay allocated.`},
+  {phase:0,text:"What does sqlite3.connect('users.db') do if file doesn't exist?",opts:["Throws an Error","Creates a new file","Asks for path","Crashes the app"],ans:1,expl:`SQLite <strong>automatically creates the file</strong> if missing.`},
+  {phase:1,text:"What is the result of this existence check?",code:`name = ("Alice",)\ncursor.execute("SELECT * FROM user WHERE username=?", name)\nresult = cursor.fetchone()\nif result:\n    print("Found")\nelse:\n    print("New")`,opts:["Found (if Alice exists)","New (if Alice exists)","Syntax Error","None always"],ans:0,expl:`If Alice exists, fetchone() returns a tuple (truthy) → <strong>Found</strong>. Otherwise None (falsy) → New.`},
+  {phase:1,text:"To prevent SQL Injection, you should use:",opts:["String formatting %","f-strings {var}","Parameterized queries ?","Concatenation +"],ans:2,expl:`<strong>Parameterized queries</strong> with <code>?</code> sanitise values before inserting into SQL.`},
+  {phase:1,text:"What is the output?",code:`cursor.execute("INSERT INTO user VALUES (?,?,?,?)", ('A','B','C','D'))\nprint(cursor.rowcount)`,opts:["0","1","4","None"],ans:1,expl:`Single INSERT affects <strong>1</strong> row → rowcount = 1.`},
+  {phase:1,text:"Which SQL command changes an existing record?",opts:["CHANGE user SET...","MODIFY user SET...","UPDATE user SET...","REPLACE user SET..."],ans:2,expl:`<code>UPDATE table SET col=? WHERE condition</code> is correct SQL.`},
+  {phase:1,text:"What is the purpose of cursor.description?",opts:["Shows table data","Provides column names","Describes DB file size","Lists all tables"],ans:1,expl:`<code>cursor.description</code> gives column names after a SELECT.`},
+  {phase:2,text:"What does data[0][1] print?",code:`data = cursor.execute("SELECT * FROM user").fetchall()\nif len(data) > 0:\n    print(data[0][1])`,opts:["The user id","The username","The mobile","The email"],ans:1,expl:`Index [1] is the second column — typically <strong>username</strong> in (id, username, ...) schema.`},
+  {phase:2,text:"What happens after rollback() on a DROP TABLE?",code:`cursor.execute("DROP TABLE IF EXISTS user")\nconn.rollback()`,opts:["Table stays dropped","Table is restored","Error is thrown","DB is deleted"],ans:0,expl:`DDL is auto-committed in SQLite — cannot be rolled back. Table stays dropped.`},
+  {phase:2,text:"What is the result?",code:`res = cursor.execute("SELECT count(*) FROM user")\nprint(res.fetchone()[0])`,opts:["List of users","Number of users","First username","Schema info"],ans:1,expl:`<code>SELECT count(*)</code> returns row count → <strong>number of users</strong>.`},
+  {phase:2,text:"How do you handle 'Database is locked'?",opts:["except LockError:","except OperationalError:","except DatabaseError:","except FileError:"],ans:1,expl:`<code>sqlite3.OperationalError</code> covers locks, missing tables, access issues.`},
+  {phase:2,text:"What is the output?",code:`cursor.execute("SELECT * FROM user")\nfor row in cursor:\n    pass\nprint(cursor.fetchone())`,opts:["First record","Last record","None","Error"],ans:2,expl:`Loop exhausts all results. <code>fetchone()</code> on exhausted cursor returns <strong>None</strong>.`}
+] },
+  2: { label:'Part 2 — Exam Practice', sub:'Reference exam-aligned: AVG, COUNT, GROUP BY, subqueries, rollback trap', questions:[
+  // ── FOUNDATIONS ──
+  {phase:0, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE emp(id INTEGER, sal INTEGER)")\ncur.executemany("INSERT INTO emp VALUES(?, ?)", [(1, 1000), (2, 2000)])\ncur.execute("SELECT AVG(sal) FROM emp")\nprint(cur.fetchone()[0])`,
+   opts:["1000","2000","1500.0","Error"],
+   ans:2,
+   expl:`<code>AVG(sal)</code> = (1000 + 2000) / 2 = <strong>1500.0</strong>. <code>fetchone()[0]</code> extracts the first element from the single-row result tuple.`},
 
-  // ── ROUND 1: FOUNDATIONS (Q1–10) ──
-  {
-    phase:0,
-    text:"Which standard Python module is used to work with SQLite databases?",
-    opts:["sql_python (Module)","sqlite3 (Module)","db_connect (Module)","mysql_lib (Module)"],
-    ans:1,
-    expl:`<code>sqlite3</code> is Python's <strong>built-in standard library module</strong> for SQLite — no installation needed. For MySQL you'd use <code>mysql-connector-python</code>, for PostgreSQL <code>psycopg2</code>. SQLite is a serverless, file-based database ideal for labs and local apps.`
-  },
-  {
-    phase:0,
-    text:"What is the output of this snippet?",
-    code:`import sqlite3\nconn = sqlite3.connect(':memory:')\nprint(type(conn))`,
-    opts:["<class 'Connection'>","<class 'Database'>","<class 'Session'>","<class 'Cursor'>"],
-    ans:0,
-    expl:`<code>sqlite3.connect()</code> returns a <code>Connection</code> object. The special path <code>':memory:'</code> creates an <strong>in-memory database</strong> that lives only while the program runs — nothing is written to disk. Perfect for testing. <code>type(conn)</code> → <code>&lt;class 'sqlite3.Connection'&gt;</code>.`
-  },
-  {
-    phase:0,
-    text:"Which object is used to execute SQL commands in Python?",
-    opts:["Connection (Object)","Bridge (Object)","Cursor (Object)","Executor (Object)"],
-    ans:2,
-    expl:`A <strong>Cursor</strong> object is the interface for executing SQL. Workflow: <code>conn = sqlite3.connect(...)</code> → <code>cursor = conn.cursor()</code> → <code>cursor.execute(sql)</code>. The Connection manages the database link; the Cursor handles query execution and results.`
-  },
-  {
-    phase:0,
-    text:"What does the following code do?",
-    code:`cursor.execute("SELECT * FROM users")\nrow = cursor.fetchone()`,
-    opts:["Deletes first user","Retrieves one row","Counts all users","Clears the table"],
-    ans:1,
-    expl:`<code>cursor.execute("SELECT * FROM users")</code> runs the query and loads results into the cursor. <code>cursor.fetchone()</code> then retrieves <strong>exactly one row</strong> as a tuple. Subsequent calls to <code>fetchone()</code> move forward through the results. Use <code>fetchall()</code> to get all rows at once.`
-  },
-  {
-    phase:0,
-    text:"To save changes permanently to the database, you must call:",
-    opts:["conn.save()","conn.commit()","conn.store()","conn.freeze()"],
-    ans:1,
-    expl:`<code>conn.commit()</code> <strong>commits the current transaction</strong> to disk. Without it, INSERT/UPDATE/DELETE operations are temporary and lost when the connection closes. <code>conn.save()</code>, <code>conn.store()</code>, and <code>conn.freeze()</code> don't exist in <code>sqlite3</code>.`
-  },
-  {
-    phase:0,
-    text:"What is the correct SQL syntax to create a table?",
-    opts:["MAKE TABLE user...","CREATE user TABLE...","CREATE TABLE user...","NEW TABLE user..."],
-    ans:2,
-    expl:`The correct SQL syntax is <code>CREATE TABLE table_name (column definitions)</code>. The keyword order matters — <code>CREATE TABLE</code> always comes before the name. <code>MAKE</code> and <code>NEW</code> are not SQL keywords.`
-  },
-  {
-    phase:0,
-    text:"In cursor.execute(query, (val1,)), why is the trailing comma used?",
-    opts:["To separate queries","To denote a tuple","To prevent errors","To end the line"],
-    ans:1,
-    expl:`<code>(val1,)</code> with a trailing comma explicitly creates a <strong>single-element tuple</strong>. Without the comma, <code>(val1)</code> is just parentheses around a value — not a tuple. The <code>execute()</code> method requires an iterable for parameter substitution, so the tuple syntax is mandatory.`
-  },
-  {
-    phase:0,
-    text:"Which method retrieves all remaining rows from a query result?",
-    opts:["cursor.get_all()","cursor.fetchmany()","cursor.fetchall()","cursor.pull_all()"],
-    ans:2,
-    expl:`<code>cursor.fetchall()</code> returns <strong>all remaining rows</strong> as a list of tuples. <code>cursor.fetchone()</code> gets one row. <code>cursor.fetchmany(n)</code> gets the next <code>n</code> rows. <code>get_all()</code> and <code>pull_all()</code> don't exist.`
-  },
-  {
-    phase:0,
-    text:"What happens if you don't call conn.close()?",
-    opts:["Database gets deleted","Resources remain leaked","Data is committed","Nothing happens (Safe)"],
-    ans:1,
-    expl:`Not closing a connection <strong>leaks resources</strong> — file handles and memory remain allocated. In long-running apps this can exhaust system resources. Best practice is to use a <code>with</code> statement (context manager): <code>with sqlite3.connect('db.db') as conn:</code> — it auto-commits and closes.`
-  },
-  {
-    phase:0,
-    text:"What does sqlite3.connect('users.db') do if the file doesn't exist?",
-    opts:["Throws an Error","Creates new file","Asks for path","Crashes the app"],
-    ans:1,
-    expl:`SQLite's <code>connect()</code> <strong>automatically creates the file</strong> if it doesn't exist. This is one of SQLite's key features — zero configuration. If you pass a path, any missing intermediate directories will cause an error, but the <code>.db</code> file itself is always created on first connect.`
-  },
+  {phase:0, text:"Why is commit() needed after INSERT/UPDATE/DELETE?",
+   opts:["To fetch records","To close the connection","To save changes permanently","To print results"],
+   ans:2,
+   expl:`<code>conn.commit()</code> <strong>flushes the pending transaction to disk</strong>. Without it, changes are lost when the connection closes. SELECT queries don't need commit.`},
 
-  // ── ROUND 2: INTERMEDIATE (Q11–15) ──
-  {
-    phase:1,
-    lab:true,
-    text:"What is the result of this existence check?",
-    code:`name = ("Alice",)\ncursor.execute("SELECT * FROM user WHERE username=?", name)\nresult = cursor.fetchone()\nif result:\n    print("Found")\nelse:\n    print("New")`,
-    opts:["Found (If Alice exists)","New (If Alice exists)","Error (Syntax)","None (Output)"],
-    ans:0,
-    expl:`If Alice exists in the table, <code>fetchone()</code> returns a tuple (truthy) → prints <strong>Found</strong>. If she doesn't exist, it returns <code>None</code> (falsy) → prints "New". This is the standard <strong>check-before-insert</strong> pattern to avoid duplicate records in your lab's user management system.`
-  },
-  {
-    phase:1,
-    text:"To prevent SQL Injection, you should use:",
-    opts:["String formatting %","f-strings {var}","Parameterized queries ?","Concatenation +"],
-    ans:2,
-    expl:`<strong>Parameterized queries</strong> with <code>?</code> placeholders are the safe approach. The <code>sqlite3</code> module sanitises the values before inserting them into the query, preventing injection attacks. Never use f-strings, <code>%</code> formatting, or <code>+</code> concatenation to build SQL with user input.`
-  },
-  {
-    phase:1,
-    text:"What is the output?",
-    code:`cursor.execute("INSERT INTO user VALUES (?,?,?,?)", ('A','B','C','D'))\nprint(cursor.rowcount)`,
-    opts:["0 (Integer)","1 (Integer)","4 (Integer)","None (Object)"],
-    ans:1,
-    expl:`<code>cursor.rowcount</code> returns the number of rows <strong>affected by the last operation</strong>. A single INSERT affects exactly 1 row → <code>rowcount</code> = <strong>1</strong>. For bulk inserts with <code>executemany()</code>, it reflects the total rows inserted.`
-  },
-  {
-    phase:1,
-    text:"Which SQL command is used to change an existing user's mobile number?",
-    opts:["CHANGE user SET...","MODIFY user SET...","UPDATE user SET...","REPLACE user SET..."],
-    ans:2,
-    expl:`<code>UPDATE table SET column=value WHERE condition</code> is the correct SQL. Example: <code>UPDATE user SET mobile=? WHERE username=?</code>. <code>CHANGE</code> and <code>MODIFY</code> are not standard SQL DML keywords. Always include a <code>WHERE</code> clause — without it, every row gets updated.`
-  },
-  {
-    phase:1,
-    text:"What is the purpose of cursor.description?",
-    opts:["Shows table data","Provides column names","Describes DB size","Lists all tables"],
-    ans:1,
-    expl:`<code>cursor.description</code> is a tuple of 7-item sequences, one per column in the last query result. The first element of each is the <strong>column name</strong>. Common use: <code>[col[0] for col in cursor.description]</code> to get all column names dynamically after a SELECT.`
-  },
+  {phase:0, text:"What will this code do?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE test(id INTEGER, name TEXT)")\ncur.execute("INSERT INTO test VALUES(1, 'A')")\ncur.execute("SELECT * FROM test")\nprint(cur.fetchall())`,
+   opts:["Empty list","[1, 'A']","Error","[(1, 'A')]"],
+   ans:3,
+   expl:`<code>fetchall()</code> returns a <strong>list of tuples</strong>. Each row is one tuple. One row inserted → <strong>[(1, 'A')]</strong>.`},
 
-  // ── ROUND 3: THE PEAK (Q16–20) ──
-  {
-    phase:2,
-    lab:true,
-    text:"Analyze this logic for your lab assignment:",
-    code:`data = cursor.execute("SELECT * FROM user").fetchall()\nif len(data) > 0:\n    print(data[0][1])`,
-    opts:["Prints the username","Prints the address","Prints the mobile","Prints the email"],
-    ans:0,
-    expl:`<code>data[0]</code> is the first row (a tuple). <code>data[0][1]</code> accesses index <code>1</code> of that tuple — the <strong>second column</strong>. In a typical user table structured as <code>(id, username, mobile, email, address)</code>, index 1 is the username. Always check your actual CREATE TABLE column order to confirm index positions.`
-  },
-  {
-    phase:2,
-    tricky:true,
-    text:"TRICKY: What happens here?",
-    code:`conn = sqlite3.connect('test.db')\ncursor = conn.cursor()\ncursor.execute("DROP TABLE IF EXISTS user")\nconn.rollback()`,
-    opts:["Table stays dropped","Table is restored","Error is thrown","DB is deleted"],
-    ans:0,
-    expl:`This is a critical SQLite gotcha. DDL statements like <code>DROP TABLE</code> in SQLite are <strong>auto-committed immediately</strong> and cannot be rolled back. <code>conn.rollback()</code> only undoes uncommitted DML (INSERT/UPDATE/DELETE). The table is permanently dropped regardless of the rollback call. Always be careful with DDL in SQLite.`
-  },
-  {
-    phase:2,
-    text:"What is the result?",
-    code:`res = cursor.execute("SELECT count(*) FROM user")\nprint(res.fetchone()[0])`,
-    opts:["List of users","Number of users","First user name","Schema details"],
-    ans:1,
-    expl:`<code>SELECT count(*)</code> returns a single-row, single-column result with the total row count. <code>fetchone()</code> returns that row as a tuple, e.g. <code>(42,)</code>. Index <code>[0]</code> extracts the integer → prints the <strong>number of users</strong> in the table.`
-  },
-  {
-    phase:2,
-    text:"How do you handle a 'Database is locked' exception in sqlite3?",
-    opts:["except LockError:","except OperationalError:","except DatabaseError:","except FileError:"],
-    ans:1,
-    expl:`SQLite raises <code>sqlite3.OperationalError</code> for operational issues including "database is locked" (which happens when another connection holds a write lock). The hierarchy: <code>OperationalError</code> → <code>DatabaseError</code> → <code>Error</code>. <code>LockError</code> and <code>FileError</code> don't exist in <code>sqlite3</code>.`
-  },
-  {
-    phase:2,
-    tricky:true,
-    text:"FINAL BOSS: What is the output?",
-    code:`# Assume 10 records exist\ncursor.execute("SELECT * FROM user")\nfor row in cursor:\n    pass\nprint(cursor.fetchone())`,
-    opts:["First record (Row)","Last record (Row)","None (Object)","Error (Loop)"],
-    ans:2,
-    expl:`The <code>for row in cursor</code> loop iterates through <strong>all 10 rows</strong>, exhausting the result set. After the loop, the cursor's internal pointer is past the last row. Calling <code>cursor.fetchone()</code> on an exhausted cursor returns <strong>None</strong> — there are no more rows to fetch.`
-  }
-];
+  {phase:0, text:"What is the issue in this code?",
+   code:`import sqlite3\ncon = sqlite3.connect("mydb.db")\ncur = con.cursor()\ncur.execute("CREATE TABLE student(id INTEGER PRIMARY KEY, name TEXT)")\ncur.execute("INSERT INTO student VALUES(1, 'Rekha')")\ncur.execute("INSERT INTO student VALUES(1, 'Asha')")\ncon.commit()`,
+   opts:["Syntax error","No issue","Name cannot be text","Primary key violation"],
+   ans:3,
+   expl:`<code>id INTEGER PRIMARY KEY</code> requires unique values. Inserting id=1 twice raises an <code>IntegrityError: UNIQUE constraint failed</code> — a <strong>primary key violation</strong>.`},
 
-/* ============================================================
-   STATE
-============================================================ */
-let current = 0, score = 0, answered = false;
-let userAnswers = new Array(questions.length).fill(null);
+  {phase:0, text:"Which module is used to work with SQLite in Python?",
+   opts:["db_connect","mysql_lib","sql_python","sqlite3"],
+   ans:3,
+   expl:`<code>sqlite3</code> is Python's <strong>built-in standard library module</strong> for SQLite databases. No pip install needed. For MySQL you'd use <code>mysql-connector-python</code>.`},
 
-/* ============================================================
-   RENDER
-============================================================ */
+  {phase:0, text:"What does sqlite3.connect(':memory:') create?",
+   opts:["A file called :memory:","An in-memory temporary database","A locked database","An error"],
+   ans:1,
+   expl:`The special string <code>':memory:'</code> tells SQLite to create a <strong>temporary in-memory database</strong> — nothing is written to disk. It's destroyed when the connection closes. Perfect for testing.`},
+
+  {phase:0, text:"To prevent SQL injection, which placeholder style should you use?",
+   opts:["f-strings {var}","String formatting %s with .format()","Concatenation with +","Parameterized queries with ?"],
+   ans:3,
+   expl:`<strong>Parameterized queries</strong> with <code>?</code> placeholders let the sqlite3 module sanitise values before inserting into SQL. Never use f-strings, <code>%</code> formatting, or <code>+</code> with user input.`},
+
+  // ── INTERMEDIATE ──
+  {phase:1, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE u(id INTEGER)")\ncur.execute("INSERT INTO u VALUES(?)", (42,))\nprint(cur.rowcount)`,
+   opts:["0","42","Error","1"],
+   ans:3,
+   expl:`<code>cursor.rowcount</code> returns the number of rows <strong>affected by the last operation</strong>. A single INSERT affects 1 row → <strong>1</strong>.`},
+
+  {phase:1, text:"What does cursor.description provide after a SELECT?",
+   opts:["Table row count","Database file size","Column names and metadata","List of all tables"],
+   ans:2,
+   expl:`<code>cursor.description</code> is a sequence of 7-item tuples, one per column. The first item of each is the <strong>column name</strong>. Use <code>[col[0] for col in cur.description]</code> to get headers dynamically.`},
+
+  {phase:1, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE t(id INTEGER, val TEXT)")\ncur.executemany("INSERT INTO t VALUES(?,?)", [(1,'a'),(2,'b'),(3,'c')])\ncur.execute("SELECT count(*) FROM t")\nprint(cur.fetchone()[0])`,
+   opts:["0","1","3","Error"],
+   ans:2,
+   expl:`<code>executemany()</code> inserts 3 rows. <code>SELECT count(*)</code> counts all rows → <code>fetchone()[0]</code> extracts the integer → <strong>3</strong>.`},
+
+  {phase:1, text:"Which SQL command updates an existing record?",
+   opts:["MODIFY table SET col=?","CHANGE table SET col=?","REPLACE INTO table SET col=?","UPDATE table SET col=? WHERE id=?"],
+   ans:3,
+   expl:`<code>UPDATE table SET column=value WHERE condition</code> is correct SQL DML. Always include <code>WHERE</code> — without it, every row gets updated. <code>MODIFY</code> and <code>CHANGE</code> are not standard SQL.`},
+
+  {phase:1, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE p(id INTEGER PRIMARY KEY, name TEXT)")\ncur.execute("INSERT INTO p VALUES(1,'Alice')")\ncur.execute("SELECT name FROM p WHERE id=1")\nrow = cur.fetchone()\nprint(row[0] if row else "Not found")`,
+   opts:["Not found","1","Error","Alice"],
+   ans:3,
+   expl:`The query selects the <code>name</code> column where <code>id=1</code>. Alice was inserted with id=1. <code>fetchone()</code> returns <code>('Alice',)</code>. <code>row[0]</code> → <strong>Alice</strong>.`},
+
+  {phase:1, text:"In mysql-connector-python, which placeholder is used in parameterized queries?",
+   opts:["?","{}",":1","%s"],
+   ans:3,
+   expl:`MySQL connector uses <strong><code>%s</code></strong> as the placeholder (unlike sqlite3 which uses <code>?</code>). Example: <code>cursor.execute("SELECT * FROM t WHERE id=%s", (1,))</code>.`},
+
+  // ── THE PEAK ──
+  {phase:2, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE s(id INTEGER, score INTEGER)")\ncur.executemany("INSERT INTO s VALUES(?,?)",[(1,80),(2,90),(3,70)])\ncur.execute("SELECT id FROM s WHERE score=(SELECT MAX(score) FROM s)")\nprint(cur.fetchone()[0])`,
+   opts:["80","1","3","2"],
+   ans:3,
+   expl:`The subquery <code>SELECT MAX(score)</code> = 90. The outer query finds the row where score=90 → id=<strong>2</strong>.`},
+
+  {phase:2, text:"What happens when you DROP TABLE without a transaction in SQLite?",
+   code:`import sqlite3\ncon = sqlite3.connect('test.db')\ncur = con.cursor()\ncur.execute("DROP TABLE IF EXISTS user")\ncon.rollback()`,
+   opts:["Table is restored","Error is thrown","Database is deleted","Table stays dropped"],
+   ans:3,
+   expl:`DDL statements like <code>DROP TABLE</code> are <strong>auto-committed immediately</strong> in SQLite and cannot be rolled back. <code>conn.rollback()</code> only undoes uncommitted DML (INSERT/UPDATE/DELETE). The table is permanently gone.`},
+
+  {phase:2, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE e(id INTEGER, dept TEXT, sal INTEGER)")\ncur.executemany("INSERT INTO e VALUES(?,?,?)",[(1,'IT',5000),(2,'HR',3000),(3,'IT',7000)])\ncur.execute("SELECT dept, SUM(sal) FROM e GROUP BY dept ORDER BY dept")\nprint(cur.fetchall())`,
+   opts:["[(IT,12000),(HR,3000)]","[('HR',3000),('IT',12000)]","Error","[('IT',12000)]"],
+   ans:1,
+   expl:`GROUP BY dept sums salaries: HR=3000, IT=5000+7000=12000. ORDER BY dept alphabetically: HR first, then IT → <strong>[('HR', 3000), ('IT', 12000)]</strong>.`},
+
+  {phase:2, text:"What exception handles 'no such table' in sqlite3?",
+   opts:["TableNotFoundError","DatabaseError","LookupError","OperationalError"],
+   ans:3,
+   expl:`<code>sqlite3.OperationalError</code> covers runtime database issues: table doesn't exist, database locked, syntax errors. Hierarchy: <code>OperationalError</code> → <code>DatabaseError</code> → <code>Error</code>.`},
+
+  {phase:2, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE t(id INTEGER, val TEXT)")\ncur.execute("INSERT INTO t VALUES(1,'hello')")\ncur.execute("SELECT * FROM t")\nfor row in cur:\n    pass\nprint(cur.fetchone())`,
+   opts:["(1, 'hello')","First row","Last row","None"],
+   ans:3,
+   expl:`The <code>for row in cur</code> loop exhausts all results. After iteration, calling <code>fetchone()</code> on an exhausted cursor returns <strong>None</strong> — there are no more rows to fetch.`},
+
+  {phase:2, text:"What does this correctly implement?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE u(name TEXT UNIQUE)")\ncur.execute("SELECT * FROM u WHERE name=?",('Bob',))\nif not cur.fetchone():\n    cur.execute("INSERT INTO u VALUES(?)",('Bob',))\n    con.commit()`,
+   opts:["Deletes Bob if exists","Updates Bob's record","Inserts Bob only if he doesn't exist","Always inserts Bob"],
+   ans:2,
+   expl:`This is the <strong>check-before-insert</strong> pattern. It SELECT queries for Bob first. If <code>fetchone()</code> returns <code>None</code> (not found), it inserts. This prevents duplicate entries without relying on constraints alone.`},
+
+  {phase:2, text:"What is the output?",
+   code:`import sqlite3\ncon = sqlite3.connect(':memory:')\ncur = con.cursor()\ncur.execute("CREATE TABLE items(id INTEGER, price REAL)")\ncur.executemany("INSERT INTO items VALUES(?,?)",[(1,10.5),(2,20.0),(3,15.5)])\ncur.execute("SELECT COUNT(*) FROM items WHERE price > 12")\nprint(cur.fetchone()[0])`,
+   opts:["1","3","0","2"],
+   ans:3,
+   expl:`Rows where price > 12: id=2 (20.0) and id=3 (15.5). id=1 (10.5) fails the condition. <code>COUNT(*)</code> = <strong>2</strong>.`},
+] }
+};
+
+let activePart = null, questions = [], current = 0, answered = false, userAnswers = [];
+
+function shuffleQ(q) {
+  q = JSON.parse(JSON.stringify(q));
+  const indexed = q.opts.map((opt,i) => ({opt,i}));
+  for(let j=indexed.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[indexed[j],indexed[k]]=[indexed[k],indexed[j]];}
+  q.ans = indexed.findIndex(x=>x.i===q.ans);
+  q.opts = indexed.map(x=>x.opt);
+  return q;
+}
+
+function startPart(n) {
+  activePart = n;
+  const p = PARTS[n];
+  questions = p.questions.map(shuffleQ);
+  current = 0; answered = false;
+  userAnswers = new Array(questions.length).fill(null);
+  document.getElementById('quizPartTitle').textContent = p.label;
+  document.getElementById('quizPartSub').textContent = p.sub;
+  document.getElementById('scoreDenom').textContent = '/ '+questions.length;
+  show('quizView'); renderQuestion();
+}
+
+function goBack() {
+  show('partSelector');
+  document.getElementById('ringArc').style.strokeDashoffset = 490;
+}
+
+function retakeQuiz() { startPart(activePart); }
+
+function show(id) {
+  ['partSelector','quizView','resultsView'].forEach(i=>{
+    document.getElementById(i).style.display = i===id?'block':'none';
+  });
+}
+
+function getScore() {
+  return userAnswers.filter((ua,i)=>ua!==null&&ua!==-1&&ua===questions[i].ans).length;
+}
+
 function renderQuestion() {
   answered = false;
   const q = questions[current];
-  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
-  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
-  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
-  document.getElementById('phaseLabel').textContent = ROUNDS[q.phase];
-  document.getElementById('nextBtn').disabled = true;
-  document.getElementById('backBtn').disabled = current === 0;
-
-  const L = ['A','B','C','D'];
-  document.getElementById('questionArea').innerHTML = `
+  document.getElementById('progressBar').style.width=(current/questions.length*100)+'%';
+  document.getElementById('progressText').textContent=`Question ${current+1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent=`Score: ${getScore()}`;
+  document.getElementById('phaseLabel').textContent=ROUNDS[q.phase];
+  document.getElementById('nextBtn').disabled=true;
+  document.getElementById('backBtn').disabled=current===0;
+  const L=['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML=`
     <div class="question-card">
-      <div class="q-number">Q${current + 1}</div>
-      ${q.tricky ? '<div class="tricky-tag">⚡ Tricky</div>' : ''}
-      ${q.lab    ? '<div class="lab-tag">🧪 Lab Question</div>' : ''}
+      <div class="q-number">Q${current+1}</div>
       <div class="q-text">${q.text}</div>
-      ${q.code ? `<div class="q-code">${esc(q.code)}</div>` : ''}
+      ${q.code?`<div class="q-code">${esc(q.code)}</div>`:''}
       <div class="options">
-        ${q.opts.map((o,i) => `
-          <button class="option-btn" id="opt${i}" onclick="selectAns(${i})">
-            <span class="opt-key">${L[i]}</span><span>${o}</span>
-          </button>`).join('')}
+        ${q.opts.map((o,i)=>`<button class="option-btn" id="opt${i}" onclick="selectAns(${i})"><span class="opt-key">${L[i]}</span><span>${o}</span></button>`).join('')}
       </div>
       <div class="explanation" id="explanation">${q.expl}</div>
     </div>`;
-
-  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+  if(userAnswers[current]!==null) revealAnswer(userAnswers[current]);
 }
 
-function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function selectAns(idx){
+  if(answered)return;
+  answered=true; userAnswers[current]=idx; revealAnswer(idx);
 }
 
-function selectAns(idx) {
-  if (answered) return;
-  answered = true;
-  userAnswers[current] = idx;
-  if (idx === questions[current].ans) score++;
-  revealAnswer(idx);
-}
-
-function revealAnswer(idx) {
-  const q = questions[current];
-  q.opts.forEach((_,i) => {
-    const b = document.getElementById(`opt${i}`);
-    b.disabled = true;
-    if (i === q.ans) b.classList.add('correct');
-    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+function revealAnswer(idx){
+  const q=questions[current];
+  q.opts.forEach((_,i)=>{
+    const b=document.getElementById(`opt${i}`);
+    b.disabled=true;
+    if(i===q.ans)b.classList.add('correct');
+    else if(i===idx&&idx!==q.ans)b.classList.add('wrong');
   });
   document.getElementById('explanation').classList.add('show');
-  document.getElementById('nextBtn').disabled = false;
-  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('nextBtn').disabled=false;
+  document.getElementById('scoreTrack').textContent=`Score: ${getScore()}`;
 }
 
-function prevQuestion() {
-  if (current === 0) return;
-  if (userAnswers[current] !== null && userAnswers[current] !== -1)
-    if (userAnswers[current] === questions[current].ans) score--;
-  userAnswers[current] = null;
-  current--;
-  renderQuestion();
-}
+function prevQuestion(){if(current===0)return;current--;renderQuestion();}
+function nextQuestion(){current++;if(current>=questions.length)showResults();else renderQuestion();}
 
-function nextQuestion() {
-  current++;
-  if (current >= questions.length) showResults();
-  else renderQuestion();
-}
-
-/* ============================================================
-   RESULTS
-============================================================ */
-function showResults() {
-  document.getElementById('quiz').style.display = 'none';
-  document.getElementById('results').style.display = 'block';
-
-  const pct = score / questions.length;
-  setTimeout(() => {
-    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
-    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
-  }, 100);
-  document.getElementById('scoreBig').textContent = score;
-
-  const v = pct>=.9 ? ['🏆 DB Architect!',       'Flawless — you know Python-SQLite inside out.']
-          : pct>=.75? ['🎯 Solid Engineer',        'Strong performance — review the Peak edge cases.']
-          : pct>=.55? ['📚 Getting There',          'Good base — focus on transactions and cursor behaviour.']
-          : pct>=.35? ['🐣 Keep Practising',        'Revisit CRUD operations and the commit/rollback flow.']
-          :           ['🔁 Back to Basics',          'Start with sqlite3 connection and cursor fundamentals.'];
-  document.getElementById('verdict').textContent = v[0];
-  document.getElementById('verdictSub').textContent = v[1];
-
-  // Round breakdown
-  const tot=[0,0,0], cor=[0,0,0];
-  questions.forEach((q,i) => { tot[q.phase]++; if(userAnswers[i]===q.ans) cor[q.phase]++; });
-  const colors=['#00c97a','#a78bfa','#ff5f7e'], names=['Foundations','Intermediate','The Peak'];
-  document.getElementById('phaseStats').innerHTML = [0,1,2].map(p => {
-    const w = tot[p] ? Math.round(cor[p]/tot[p]*100) : 0;
-    return `<div class="phase-stat">
-      <div class="phase-stat-name">${names[p]}</div>
-      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
-      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
-    </div>`;
+function showResults(){
+  show('resultsView');
+  const score=getScore(), pct=score/questions.length;
+  setTimeout(()=>{
+    document.getElementById('ringArc').style.transition='stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset=2*Math.PI*78*(1-pct);
+  },100);
+  document.getElementById('scoreBig').textContent=score;
+  const v=pct>=.9?['🏆 Mastered!','Outstanding.']:pct>=.75?['🎯 Strong Result','A few edges to polish.']:pct>=.55?['📚 Getting There','Review the explanations.']:pct>=.35?['🐣 Keep Practising','Focus on flagged questions.']:['🔁 Start Over','Work through material and retry.'];
+  document.getElementById('verdict').textContent=v[0];
+  document.getElementById('verdictSub').textContent=v[1];
+  const tot=[0,0,0],cor=[0,0,0];
+  questions.forEach((q,i)=>{tot[q.phase]++;if(userAnswers[i]===q.ans)cor[q.phase]++;});
+  const colors=['#00c97a','#f59e0b','#ff5f7e'],names=['Foundations','Intermediate','Peak'];
+  document.getElementById('phaseStats').innerHTML=[0,1,2].map(p=>{
+    const w=tot[p]?Math.round(cor[p]/tot[p]*100):0;
+    return `<div class="phase-stat"><div class="phase-stat-name">${names[p]}</div><div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div><div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div></div>`;
   }).join('');
-  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
-    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
-  }), 150);
-
-  // Review list
+  setTimeout(()=>document.querySelectorAll('.phase-stat-fill').forEach(el=>{el.style.transition='width .8s .3s';el.style.width=el.dataset.w+'%';}),150);
   const L=['A','B','C','D'];
-  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
-    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+  document.getElementById('reviewList').innerHTML=questions.map((q,i)=>{
+    const ua=userAnswers[i],ok=ua===q.ans,skip=ua===null||ua===-1;
     return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
-      <div class="review-top">
-        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
-        <div>
-          ${q.tricky?'<div class="tricky-tag" style="margin-bottom:6px">⚡ Tricky</div>':''}
-          ${q.lab?'<div class="lab-tag" style="margin-bottom:6px">🧪 Lab Question</div>':''}
-          <div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div>
-          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
-        </div>
-      </div>
+      <div class="review-top"><div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+      <div><div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div></div></div>
       <div class="review-detail">
         ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
         ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
         <div class="expl-text">💡 ${q.expl}</div>
-      </div>
-    </div>`;
+      </div></div>`;
   }).join('');
 }
 
-function restartQuiz() {
-  current=0; score=0; answered=false;
-  userAnswers=new Array(questions.length).fill(null);
-  document.getElementById('results').style.display='none';
-  document.getElementById('quiz').style.display='block';
-  renderQuestion();
-}
-
-renderQuestion();
+show('partSelector');
 </script>
 </body>
 </html>
