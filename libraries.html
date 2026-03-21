@@ -3,37 +3,611 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🐍 Libraries Quiz</title>
+<title>🐍 Libraries Quiz — Python Quiz Hub</title>
+<meta name="quiz-count" content="30"/>
 <style>
-  @font-face { font-family:'Display'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'); }
-  @font-face { font-family:'Mono'; src:local('Courier New'),local('Courier'); }
-  :root { --bg:#07090f; --card:#13161f; --border:#1e2235; --text:#dde2f0; --muted:#5a6285; --accent:#f59e0b; }
+  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
+  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #14171f;
+    --card:    #1a1e28;
+    --border:  #252a38;
+    --accent:  #f59e0b;
+    --accent2: #ffb547;
+    --text:    #e8eaf0;
+    --muted:   #6b7290;
+    --correct: #00c97a;
+    --wrong:   #ff4f6e;
+    --radius:  12px;
+  }
+
   *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg); color:var(--text); font-family:'Display','Trebuchet MS',sans-serif; min-height:100vh; display:flex; align-items:center; justify-content:center; }
-  body::before { content:''; position:fixed; inset:0; background-image:radial-gradient(circle,#1e2235 1px,transparent 1px); background-size:32px 32px; opacity:.55; pointer-events:none; }
-  .box { position:relative; z-index:1; text-align:center; padding:48px 40px; background:var(--card); border:1px solid var(--border); border-radius:20px; max-width:480px; width:90%; }
-  .icon { font-size:3rem; margin-bottom:20px; }
-  .tag { display:inline-block; font-family:'Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent); border:1px solid color-mix(in srgb,var(--accent) 25%,transparent); padding:4px 12px; border-radius:99px; margin-bottom:16px; }
-  h1 { font-size:1.6rem; font-weight:800; letter-spacing:-.02em; margin-bottom:10px; }
-  p { font-family:'Mono',monospace; font-size:.8rem; color:var(--muted); line-height:1.6; margin-bottom:32px; }
-  .placeholder-box { border:2px dashed var(--border); border-radius:12px; padding:32px 24px; margin-bottom:28px; color:var(--muted); font-family:'Mono',monospace; font-size:.78rem; line-height:1.9; text-align:left; }
-  .placeholder-box code { color:var(--accent); background:color-mix(in srgb,var(--accent) 10%,transparent); padding:2px 6px; border-radius:4px; }
-  .back { display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--muted); font-family:'Mono',monospace; font-size:.78rem; border:1px solid var(--border); padding:9px 18px; border-radius:8px; transition:border-color .2s,color .2s; }
-  .back:hover { border-color:var(--accent); color:var(--accent); }
+
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(245,158,11,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,158,11,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ── QUIZ TOP ── */
+  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+  .back-home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px; color:var(--muted);
+    font-family:'Syne',sans-serif; font-size:.82rem; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s; white-space:nowrap;
+  }
+  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
+  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#f59e0b,#ef4444); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
+
+  .phase-label {
+    display:inline-flex; align-items:center;
+    background:var(--border); border-radius:99px;
+    padding:4px 14px; font-size:.78rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:20px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; }
+  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
+
+  /* ── TRICKY / LAB BADGES ── */
+  .tricky-tag {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(245,158,11,.1); border:1px solid rgba(245,158,11,.3);
+    border-radius:6px; padding:4px 10px; font-size:.72rem;
+    font-family:'Space Mono',monospace; color:var(--accent);
+    margin-bottom:10px; letter-spacing:.04em;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display:grid; gap:9px; margin-top:14px; }
+  .option-btn {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:11px 16px; text-align:left;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
+    cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#1e1c14; transform:translateX(3px); }
+  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
+  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
+  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
+  .option-btn.wrong   { border-color:var(--wrong);   background:rgba(255,79,110,.08); }
+  .option-btn.wrong .opt-key   { background:var(--wrong);   color:#fff; }
+  .option-btn:disabled { cursor:default; }
+
+  /* ── EXPLANATION ── */
+  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
+  .explanation.show { display:block; }
+  .explanation strong { color:var(--accent); }
+  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+
+  /* ── NAV ── */
+  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary { background:linear-gradient(135deg,#f59e0b,#ef4444); color:#000; box-shadow:0 4px 20px rgba(245,158,11,.25); }
+  .btn-primary:hover { box-shadow:0 6px 28px rgba(245,158,11,.4); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── RESULTS ── */
+  #results { display:none; }
+  .score-ring-wrap { text-align:center; margin-bottom:40px; }
+  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
+  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
+  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
+  .verdict-sub { color:var(--muted); font-size:.9rem; }
+
+  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
+  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+  .phase-stat-score { font-size:1.5rem; font-weight:800; }
+  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
+  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
+
+  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+  .review-header span { flex:1; height:1px; background:var(--border); }
+
+  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
+  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
+  .review-top { display:flex; align-items:flex-start; gap:12px; }
+  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
+  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
+  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
+  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
+  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
+  .review-detail .lbl { font-weight:700; margin-right:4px; }
+  .your-ans { color:var(--wrong); }
+  .corr-ans { color:var(--correct); }
+  .expl-text { color:#8a93b0; margin-top:4px; }
+  .expl-text strong { color:var(--accent); font-weight:600; }
+  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
+  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+
+  @media(max-width:560px){
+    .question-card { padding:20px 16px; }
+    .q-code { font-size:.74rem; }
+  }
 </style>
 </head>
 <body>
-<div class="box">
-  <div class="icon">📚</div>
-  <div class="tag">quiz · placeholder</div>
-  <h1>Libraries</h1>
-  <p>This file is ready. Drop your quiz content in here to activate this topic.</p>
-  <div class="placeholder-box">
-    📄 File: <code>libraries.html</code><br>
-    📁 Path: <code>D:\PGCP AI\Code\python\mock\</code><br>
-    🔗 Links from: <code>index.html</code>
+<div class="wrapper">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-top">
+      <a class="back-home-btn" href="index.html">← Home</a>
+      <div class="quiz-title-block">
+        <h2>📚 Libraries</h2>
+        <p>30 questions · NumPy · Pandas · Matplotlib · foundations → peak</p>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 30</span>
+      <span id="scoreTrack">Score: 0</span>
+    </div>
+    <div id="phaseLabel" class="phase-label"></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
   </div>
-  <a class="back" href="index.html">← Back to Home</a>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f59e0b"/>
+              <stop offset="100%" stop-color="#ef4444"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-sub">/ 30</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+    </div>
+    <div class="phase-stats" id="phaseStats"></div>
+    <div class="review-header">📋 Full Answer Analysis <span></span></div>
+    <div id="reviewList"></div>
+    <div class="results-nav">
+      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+    </div>
+  </div>
+
 </div>
+<script>
+/* ============================================================
+   DATA — Libraries Mock (30 Qs)
+   phase: 0 = 🟢 Foundations, 1 = 🟡 Intermediate, 2 = 🔴 Peak
+   tricky: true = show ⚡ Tricky badge
+============================================================ */
+const ROUNDS = ['🟢 Round 1: Foundations', '🟡 Round 2: Intermediate', '🔴 Round 3: The Peak'];
+
+const questions = [
+
+  // ── ROUND 1: FOUNDATIONS (Q1–15) ──
+  {
+    phase:0,
+    text:"How do you create a 1D NumPy array from a Python list L?",
+    opts:["array = np.list(L)","array = np.array(L)","array = np.to_list(L)","array = np.make(L)"],
+    ans:1,
+    expl:`<code>np.array(L)</code> is the standard way to convert a Python list to a NumPy array. <code>np.list()</code>, <code>np.to_list()</code>, and <code>np.make()</code> don't exist in NumPy.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`import numpy as np\na = np.array([1, 2])\nb = np.array([3, 4])\nprint(a + b)`,
+    opts:["[4, 6] (Array)","[1, 2, 3, 4]","4 6 (Integer)","Error (Syntax)"],
+    ans:0,
+    expl:`NumPy performs <strong>element-wise operations</strong> by default. <code>a + b</code> adds corresponding elements: <code>1+3=4</code>, <code>2+4=6</code>. Result: <code>[4 6]</code>. This is different from Python lists where <code>+</code> would concatenate.`
+  },
+  {
+    phase:0,
+    text:"In Pandas, which function is used to read a file with a | separator?",
+    opts:['pd.read_csv(sep="|")','pd.read_table(sep="|")','pd.read_pipe(sep="|")','Both a and b'],
+    ans:3,
+    expl:`Both <code>pd.read_csv(sep="|")</code> and <code>pd.read_table(sep="|")</code> can read pipe-separated files. <code>read_csv</code> defaults to comma, <code>read_table</code> defaults to tab — but both accept any separator via the <code>sep</code> parameter. <code>pd.read_pipe()</code> doesn't exist.`
+  },
+  {
+    phase:0,
+    text:"How do you display the first 5 rows of a DataFrame df?",
+    opts:["print(df.first(5))","print(df.head())","print(df.top(5))","print(df.show(5))"],
+    ans:1,
+    expl:`<code>df.head()</code> returns the first <strong>5 rows</strong> by default. You can pass a number: <code>df.head(10)</code> for 10 rows. <code>df.tail()</code> gives the last rows. The other methods don't exist in Pandas.`
+  },
+  {
+    phase:0,
+    text:"Which library is best for interactive, web-based plots?",
+    opts:["Matplotlib (Static)","Seaborn (Static)","Plotly (Library)","NumPy (Library)"],
+    ans:2,
+    expl:`<strong>Plotly</strong> is designed for interactive, web-based visualisations — you can zoom, hover, and embed in web apps. Matplotlib and Seaborn produce static images by default. NumPy is a numerical computing library, not a visualisation tool.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`import numpy as np\nprint(np.exp(0))`,
+    opts:["0 (Integer)","1.0 (Float)","2.71 (Float)","Error (Math)"],
+    ans:1,
+    expl:`<code>np.exp(x)</code> computes e^x. <code>np.exp(0)</code> = e^0 = <strong>1.0</strong>. <code>np.exp(1)</code> ≈ 2.718 (Euler's number). This is a common math identity: any number raised to the power of 0 is 1.`
+  },
+  {
+    phase:0,
+    text:'How do you select a single column named "Gender" from DataFrame df?',
+    opts:['df.get("Gender")','df["Gender"]','df.Gender','All of above'],
+    ans:3,
+    expl:`All three methods work. <code>df["Gender"]</code> is the <strong>preferred</strong> bracket notation (works with all column names including those with spaces). <code>df.Gender</code> is attribute access (fails if column name has spaces or conflicts with a DataFrame method). <code>df.get("Gender")</code> also works and returns <code>None</code> if missing rather than raising an error.`
+  },
+  {
+    phase:0,
+    text:"Which Matplotlib function creates a pie chart?",
+    opts:["plt.pie()","plt.circle()","plt.slice()","plt.round()"],
+    ans:0,
+    expl:`<code>plt.pie(data)</code> creates a pie chart. Example: <code>plt.pie([30, 40, 30], labels=['A','B','C'])</code>. <code>plt.circle()</code>, <code>plt.slice()</code>, and <code>plt.round()</code> don't exist in Matplotlib.`
+  },
+  {
+    phase:0,
+    text:"What does df.columns = ['A', 'B'] do?",
+    opts:["Deletes the columns","Renames the columns","Creates new data","Sorts the columns"],
+    ans:1,
+    expl:`Assigning a list to <code>df.columns</code> <strong>renames all columns</strong> in order. The list must have the same length as the number of columns. This is an in-place operation — it modifies the DataFrame directly.`
+  },
+  {
+    phase:0,
+    text:"What is the shape of an array created from 4 lists of 5 numbers each?",
+    opts:["(4, 5)","(5, 4)","(20, 1)","(1, 20)"],
+    ans:0,
+    expl:`When you pass 4 lists of 5 elements to <code>np.array()</code>, you get a 2D array with <strong>4 rows and 5 columns</strong> → shape <code>(4, 5)</code>. NumPy shape convention is always <code>(rows, columns)</code>.`
+  },
+  {
+    phase:0,
+    text:"Which NumPy function is used for element-wise multiplication?",
+    opts:["np.multiply(a, b)","a * b","Both a and b","np.dot(a, b)"],
+    ans:2,
+    expl:`Both <code>np.multiply(a, b)</code> and <code>a * b</code> perform <strong>element-wise multiplication</strong>. <code>np.dot(a, b)</code> is the dot product (matrix multiplication) — a completely different operation. Both syntaxes are equivalent for element-wise.`
+  },
+  {
+    phase:0,
+    text:"How do you import the Pandas library conventionally?",
+    opts:["import pandas as p","import pandas as pd","import pandas as pan","import pandas"],
+    ans:1,
+    expl:`The universal convention is <code>import pandas as pd</code>. This alias is used in all documentation, tutorials, and codebases. Deviating from it makes your code harder to read for other Python developers.`
+  },
+  {
+    phase:0,
+    text:"What chart is best for showing sales trends over 5 years?",
+    opts:["Pie Chart","Line Graph","Histogram","Scatter Plot"],
+    ans:1,
+    expl:`A <strong>Line Graph</strong> is best for showing trends over time — it clearly shows how a value changes continuously. Pie charts show proportions. Histograms show frequency distributions. Scatter plots show correlation between two variables.`
+  },
+  {
+    phase:0,
+    text:"What does header=None mean in read_table?",
+    opts:["File has no data","File has no names","File is empty","Ignore first row"],
+    ans:1,
+    expl:`<code>header=None</code> tells Pandas that the file has <strong>no header row</strong> — the first row is data, not column names. Pandas will assign numeric column names (0, 1, 2…) instead. Without this, the first data row would be incorrectly treated as headers.`
+  },
+  {
+    phase:0,
+    text:"To create a bar graph in Matplotlib, use:",
+    opts:["plt.bar()","plt.column()","plt.rect()","plt.graph()"],
+    ans:0,
+    expl:`<code>plt.bar(x, height)</code> creates a vertical bar chart. For horizontal bars, use <code>plt.barh()</code>. <code>plt.column()</code>, <code>plt.rect()</code>, and <code>plt.graph()</code> don't exist in Matplotlib.`
+  },
+
+  // ── ROUND 2: INTERMEDIATE (Q16–25) ──
+  {
+    phase:1,
+    text:"What is the output of this snippet?",
+    code:`import pandas as pd\ndf = pd.DataFrame({'Age': [20, 30], 'Sex': ['M', 'F']})\ndf['Col'] = df['Age'].astype(str) + ":" + df['Sex']\nprint(df['Col'][0])`,
+    opts:["20 (Integer)","20:M (String)","M:20 (String)","Error (Type)"],
+    ans:1,
+    expl:`<code>df['Age'].astype(str)</code> converts the Age column to strings: <code>["20", "30"]</code>. String concatenation with <code>":"</code> and <code>df['Sex']</code> gives <code>["20:M", "30:F"]</code>. Index <code>[0]</code> → <strong>20:M</strong>. This is a common column concatenation pattern in data wrangling.`
+  },
+  {
+    phase:1,
+    text:"How do you find the average Views for each Profession?",
+    opts:["df.groupBy('Views').mean()","df.groupby('Profession')['Views'].mean()","df.mean('Profession')","df.sum('Views')"],
+    ans:1,
+    expl:`<code>df.groupby('Profession')['Views'].mean()</code> is correct. Note: it's <code>groupby</code> (lowercase b), not <code>groupBy</code> (which is Spark/Java syntax). This groups by Profession, selects Views, and computes the mean per group.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`import numpy as np\na = np.array([10, 20, 30])\nprint(a[a > 15])`,
+    opts:["[20, 30]","[True, True]","[10]","Error"],
+    ans:0,
+    expl:`<code>a > 15</code> creates a boolean mask: <code>[False, True, True]</code>. Using this mask to index the array (<strong>boolean indexing</strong>) returns only the elements where the mask is True: <code>[20, 30]</code>. This is one of NumPy's most powerful features.`
+  },
+  {
+    phase:1,
+    text:"Which command creates 5 separate subplots in one figure?",
+    opts:["plt.subplots(5, 1)","plt.plot(5)","plt.many()","plt.pie(5)"],
+    ans:0,
+    expl:`<code>plt.subplots(5, 1)</code> creates a figure with <strong>5 rows, 1 column</strong> of subplots (5 stacked panels). It returns <code>(fig, axes)</code>. <code>plt.subplots(2, 3)</code> would give a 2×3 grid of 6 subplots. The other options don't create subplots.`
+  },
+  {
+    phase:1,
+    text:"What is the result?",
+    code:`import pandas as pd\ns = pd.Series([1, 2], index=['a', 'b'])\nprint(s['a'])`,
+    opts:["0 (Integer)","1 (Integer)","a (String)","Error (Key)"],
+    ans:1,
+    expl:`A Pandas Series with a custom index allows label-based access. <code>s['a']</code> retrieves the value at label <code>'a'</code>, which is <strong>1</strong>. The index labels here are <code>'a'</code> and <code>'b'</code>, replacing the default 0, 1.`
+  },
+  {
+    phase:1,
+    text:"How do you find the maximum sale in each year from a DataFrame?",
+    opts:["df.max(axis=1)","df.groupby('Year').max()","df.sort_values()","df.year_max()"],
+    ans:1,
+    expl:`<code>df.groupby('Year').max()</code> groups the DataFrame by the Year column and returns the maximum value of all other columns per year. <code>df.max(axis=1)</code> finds the max across columns for each row — a different operation. <code>df.year_max()</code> doesn't exist.`
+  },
+  {
+    phase:1,
+    text:"What happens if you add two NumPy arrays of incompatible shapes?",
+    opts:["They concatenate","It throws an Error","It pads zeros","It works anyway"],
+    ans:1,
+    expl:`Arrays of incompatible shapes raise a <code>ValueError</code>. However, NumPy has a concept called <strong>broadcasting</strong> — if shapes are compatible by specific rules (one dimension is 1), it <em>can</em> work. Truly incompatible shapes (e.g., <code>(3,)</code> + <code>(4,)</code>) always error.`
+  },
+  {
+    phase:1,
+    text:"Which Seaborn function is used for statistical bar plots?",
+    opts:["sns.barplot()","sns.lineplot()","sns.boxplot()","sns.heatmap()"],
+    ans:0,
+    expl:`<code>sns.barplot()</code> creates a bar chart with <strong>confidence intervals</strong> automatically — it shows both the mean and the uncertainty. <code>sns.lineplot()</code> is for lines, <code>sns.boxplot()</code> shows distribution quartiles, and <code>sns.heatmap()</code> visualises 2D data as colour-coded grids.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`import numpy as np\na = np.array([[1, 2], [3, 4]])\nprint(a.flatten())`,
+    opts:["[1, 2, 3, 4]","[[1, 2, 3, 4]]","[1, 3, 2, 4]","Error"],
+    ans:0,
+    expl:`<code>.flatten()</code> collapses a multi-dimensional array into a <strong>1D array</strong>, reading row by row (C order). A 2×2 matrix <code>[[1,2],[3,4]]</code> flattens to <code>[1, 2, 3, 4]</code>. Use <code>.flatten(order='F')</code> for column-major order.`
+  },
+  {
+    phase:1,
+    text:"To save a DataFrame to a CSV file, use:",
+    opts:["df.save_csv()","df.to_csv()","df.write_csv()","df.out_csv()"],
+    ans:1,
+    expl:`<code>df.to_csv('filename.csv')</code> saves the DataFrame as a CSV. Use <code>index=False</code> to avoid writing the row index as an extra column: <code>df.to_csv('file.csv', index=False)</code>. The other methods don't exist in Pandas.`
+  },
+
+  // ── ROUND 3: THE PEAK (Q26–30) ──
+  {
+    phase:2,
+    tricky:true,
+    text:"TRICKY: What is the output?",
+    code:`import numpy as np\na = np.array([1, 2])\nb = a\nb[0] = 10\nprint(a[0])`,
+    opts:["1 (Integer)","10 (Integer)","0 (Integer)","Error (Ref)"],
+    ans:1,
+    expl:`This is the <strong>NumPy shallow copy gotcha</strong>. <code>b = a</code> does NOT copy the array — both <code>a</code> and <code>b</code> reference the <strong>same underlying data buffer</strong>. Modifying <code>b[0] = 10</code> also changes <code>a[0]</code>. To make an independent copy, use <code>b = a.copy()</code>.`
+  },
+  {
+    phase:2,
+    text:"What does df.iloc[0:2, 0:1] retrieve?",
+    opts:["First two rows, first column","First row, first two columns","All rows, first column","First row, first column"],
+    ans:0,
+    expl:`<code>df.iloc[row_slice, col_slice]</code> uses integer-based indexing. <code>0:2</code> selects rows 0 and 1 (2 is excluded). <code>0:1</code> selects column 0 only (1 is excluded). Result: <strong>first two rows, first column</strong>. Note: <code>iloc</code> slices are exclusive at the stop, like standard Python slices.`
+  },
+  {
+    phase:2,
+    text:"Analyze the code. What is the output?",
+    code:`import pandas as pd\ndf = pd.DataFrame({'val': [10, 20, 30]})\nprint(df[df['val'] == 20].index[0])`,
+    opts:["0 (Integer)","1 (Integer)","20 (Integer)","val (String)"],
+    ans:1,
+    expl:`<code>df['val'] == 20</code> creates a boolean mask. <code>df[mask]</code> filters to rows where val is 20 — that's the row at index <code>1</code>. <code>.index[0]</code> gets the first (and only) index label of that filtered result → <strong>1</strong>.`
+  },
+  {
+    phase:2,
+    text:"In Matplotlib, what does plt.stackplot() compare?",
+    opts:["Proportions of total","Individual data points","Correlation between variables","Categorical data frequency"],
+    ans:0,
+    expl:`<code>plt.stackplot()</code> creates a stacked area chart, which shows how multiple components <strong>contribute to a total over time</strong> — similar to a stacked bar chart but continuous. It's ideal for showing how individual parts make up a whole across a time axis.`
+  },
+  {
+    phase:2,
+    tricky:true,
+    text:"FINAL BOSS: What is the output?",
+    code:`import numpy as np\na = np.array([1, 2, 3])\nprint(a + np.array([10]))`,
+    opts:["[11, 2, 3]","[11, 12, 13]","Error (Shape)","[10, 10, 10]"],
+    ans:1,
+    expl:`This demonstrates <strong>NumPy Broadcasting</strong>. When adding a shape <code>(3,)</code> array with a shape <code>(1,)</code> array, NumPy stretches the smaller array to match: <code>[10]</code> becomes <code>[10, 10, 10]</code>. Then element-wise addition: <code>[1+10, 2+10, 3+10]</code> = <strong>[11, 12, 13]</strong>. Broadcasting rules: dimensions are compatible if they are equal OR one of them is 1.`
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = 0, score = 0, answered = false;
+let userAnswers = new Array(questions.length).fill(null);
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('phaseLabel').textContent = ROUNDS[q.phase];
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Q${current + 1}</div>
+      ${q.tricky ? '<div class="tricky-tag">⚡ Tricky</div>' : ''}
+      <div class="q-text">${q.text}</div>
+      ${q.code ? `<div class="q-code">${esc(q.code)}</div>` : ''}
+      <div class="options">
+        ${q.opts.map((o,i) => `
+          <button class="option-btn" id="opt${i}" onclick="selectAns(${i})">
+            <span class="opt-key">${L[i]}</span><span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.expl}</div>
+    </div>`;
+
+  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectAns(idx) {
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = idx;
+  if (idx === questions[current].ans) score++;
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  const q = questions[current];
+  q.opts.forEach((_,i) => {
+    const b = document.getElementById(`opt${i}`);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+  });
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  if (userAnswers[current] !== null && userAnswers[current] !== -1)
+    if (userAnswers[current] === questions[current].ans) score--;
+  userAnswers[current] = null;
+  current--;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else renderQuestion();
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const pct = score / questions.length;
+  setTimeout(() => {
+    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
+  }, 100);
+  document.getElementById('scoreBig').textContent = score;
+
+  const v = pct>=.9 ? ['🏆 Data Wizard!',        'Flawless — you know NumPy, Pandas & Matplotlib deeply.']
+          : pct>=.75? ['🎯 Strong Analyst',        'Great performance — a few edge cases to sharpen.']
+          : pct>=.55? ['📚 Getting There',          'Good base — review broadcasting & groupby logic.']
+          : pct>=.35? ['🐣 Keep Practising',        'Focus on Pandas methods and NumPy array behaviour.']
+          :           ['🔁 Back to Basics',          'Start with NumPy arrays and Pandas DataFrames fundamentals.'];
+  document.getElementById('verdict').textContent = v[0];
+  document.getElementById('verdictSub').textContent = v[1];
+
+  // Round breakdown
+  const tot=[0,0,0], cor=[0,0,0];
+  questions.forEach((q,i) => { tot[q.phase]++; if(userAnswers[i]===q.ans) cor[q.phase]++; });
+  const colors=['#00c97a','#f59e0b','#ff5f7e'], names=['Foundations','Intermediate','The Peak'];
+  document.getElementById('phaseStats').innerHTML = [0,1,2].map(p => {
+    const w = tot[p] ? Math.round(cor[p]/tot[p]*100) : 0;
+    return `<div class="phase-stat">
+      <div class="phase-stat-name">${names[p]}</div>
+      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
+      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
+    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
+  }), 150);
+
+  // Review list
+  const L=['A','B','C','D'];
+  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
+    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+    return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
+      <div class="review-top">
+        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+        <div>
+          ${q.tricky?'<div class="tricky-tag" style="margin-bottom:6px">⚡ Tricky</div>':''}
+          <div class="review-q">Q${i+1}. ${q.text}${q.code?`<br><code>${esc(q.code.replace(/\n/g,' | '))}</code>`:''}</div>
+          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
+        </div>
+      </div>
+      <div class="review-detail">
+        ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
+        ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
+        <div class="expl-text">💡 ${q.expl}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz() {
+  current=0; score=0; answered=false;
+  userAnswers=new Array(questions.length).fill(null);
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
 </body>
 </html>
