@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🐍 Snippets Quiz — Python Quiz Hub</title>
+<meta name="quiz-count" content="40"/>
+<style>
+  @font-face { font-family:'Syne'; src:local('Futura'),local('Century Gothic'),local('Trebuchet MS'),local('Segoe UI'); font-weight:400 800; }
+  @font-face { font-family:'Space Mono'; src:local('Courier New'),local('Courier'),local('Lucida Console'); font-weight:400 700; }
+
+  :root {
+    --bg:      #0d0f14;
+    --surface: #14171f;
+    --card:    #1a1e28;
+    --border:  #252a38;
+    --accent:  #34d399;
+    --accent2: #ffb547;
+    --text:    #e8eaf0;
+    --muted:   #6b7290;
+    --correct: #00c97a;
+    --wrong:   #ff4f6e;
+    --radius:  12px;
+  }
+
+  *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+  body {
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(52,211,153,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(52,211,153,.03) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  .wrapper { position:relative; z-index:1; max-width:820px; margin:0 auto; padding:40px 20px 80px; }
+
+  /* ── QUIZ TOP ── */
+  .quiz-top { display:flex; align-items:center; gap:14px; margin-bottom:32px; }
+  .back-home-btn {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:8px; padding:8px 14px; color:var(--muted);
+    font-family:'Syne',sans-serif; font-size:.82rem; cursor:pointer;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    transition:border-color .15s, color .15s; white-space:nowrap;
+  }
+  .back-home-btn:hover { border-color:var(--accent); color:var(--accent); }
+  .quiz-title-block h2 { font-size:1.2rem; font-weight:800; }
+  .quiz-title-block p  { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:2px; }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap { background:var(--border); border-radius:99px; height:6px; margin-bottom:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:linear-gradient(90deg,#34d399,#0ea5e9); border-radius:99px; transition:width .4s cubic-bezier(.4,0,.2,1); }
+  .progress-label { display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-bottom:28px; }
+
+  .phase-label {
+    display:inline-flex; align-items:center;
+    background:var(--border); border-radius:99px;
+    padding:4px 14px; font-size:.78rem; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:20px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .question-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:28px 28px 24px; margin-bottom:16px; animation:fadeUp .35s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .q-number { font-family:'Space Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:10px; letter-spacing:.06em; }
+  .q-text   { font-size:1.05rem; font-weight:600; line-height:1.5; margin-bottom:4px; }
+  .q-code   { font-family:'Space Mono',monospace; background:#0a0c11; border:1px solid var(--border); border-radius:8px; padding:12px 16px; font-size:.82rem; color:#7dd3fc; margin:12px 0 18px; white-space:pre; overflow-x:auto; }
+
+  /* ── OPTIONS ── */
+  .options { display:grid; gap:9px; margin-top:14px; }
+  .option-btn {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:8px; padding:11px 16px; text-align:left;
+    color:var(--text); font-family:'Syne',sans-serif; font-size:.92rem;
+    cursor:pointer; display:flex; align-items:center; gap:12px;
+    transition:border-color .15s, background .15s, transform .1s;
+  }
+  .option-btn:hover:not(:disabled) { border-color:var(--accent); background:#141e1a; transform:translateX(3px); }
+  .opt-key { min-width:26px; height:26px; border-radius:6px; background:var(--border); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:.7rem; font-weight:700; color:var(--muted); transition:background .15s, color .15s; }
+  .option-btn.correct { border-color:var(--correct); background:rgba(0,201,122,.08); }
+  .option-btn.correct .opt-key { background:var(--correct); color:#000; }
+  .option-btn.wrong   { border-color:var(--wrong);   background:rgba(255,79,110,.08); }
+  .option-btn.wrong .opt-key   { background:var(--wrong);   color:#fff; }
+  .option-btn:disabled { cursor:default; }
+
+  /* ── EXPLANATION ── */
+  .explanation { margin-top:14px; background:#0f1219; border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 16px; font-size:.87rem; line-height:1.6; color:#b0b8cc; display:none; animation:fadeUp .25s ease; }
+  .explanation.show { display:block; }
+  .explanation strong { color:var(--accent); }
+  .explanation code   { font-family:'Space Mono',monospace; background:#1a1e28; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+
+  /* ── NAV ── */
+  .nav { display:flex; gap:12px; justify-content:flex-end; margin-top:28px; }
+  .btn { padding:11px 28px; border-radius:8px; font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:transform .1s, box-shadow .2s; }
+  .btn:active { transform:scale(.97); }
+  .btn-primary { background:linear-gradient(135deg,#34d399,#0ea5e9); color:#000; box-shadow:0 4px 20px rgba(52,211,153,.25); }
+  .btn-primary:hover { box-shadow:0 6px 28px rgba(52,211,153,.4); }
+  .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--muted); }
+  .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* ── RESULTS ── */
+  #results { display:none; }
+  .score-ring-wrap { text-align:center; margin-bottom:40px; }
+  .score-ring { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-ring-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .score-big { font-size:2.8rem; font-weight:800; line-height:1; }
+  .score-sub { font-size:.78rem; color:var(--muted); font-family:'Space Mono',monospace; margin-top:4px; }
+  .verdict { font-size:1.4rem; font-weight:800; margin-bottom:6px; }
+  .verdict-sub { color:var(--muted); font-size:.9rem; }
+
+  .phase-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:12px; margin:32px 0; }
+  .phase-stat { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+  .phase-stat-name  { font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:8px; }
+  .phase-stat-score { font-size:1.5rem; font-weight:800; }
+  .phase-stat-bar   { height:4px; background:var(--border); border-radius:99px; margin-top:8px; overflow:hidden; }
+  .phase-stat-fill  { height:100%; border-radius:99px; transition:width .8s .2s; }
+
+  .review-header { font-size:1.1rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+  .review-header span { flex:1; height:1px; background:var(--border); }
+
+  .review-item { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; margin-bottom:12px; }
+  .review-item.r-correct { border-color:rgba(0,201,122,.3); }
+  .review-item.r-wrong   { border-color:rgba(255,79,110,.3); }
+  .review-top { display:flex; align-items:flex-start; gap:12px; }
+  .review-badge { min-width:28px; height:28px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.8rem; font-weight:700; }
+  .r-correct .review-badge { background:rgba(0,201,122,.2); color:var(--correct); }
+  .r-wrong   .review-badge { background:rgba(255,79,110,.2); color:var(--wrong); }
+  .review-q { font-weight:600; font-size:.9rem; line-height:1.45; }
+  .review-q code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.78em; color:#7dd3fc; }
+  .review-detail { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); font-size:.83rem; color:var(--muted); line-height:1.6; }
+  .review-detail .lbl { font-weight:700; margin-right:4px; }
+  .your-ans { color:var(--wrong); }
+  .corr-ans { color:var(--correct); }
+  .expl-text { color:#8a93b0; margin-top:4px; }
+  .expl-text strong { color:var(--accent); font-weight:600; }
+  .expl-text code { font-family:'Space Mono',monospace; background:#0a0c11; padding:1px 5px; border-radius:4px; font-size:.8em; color:#7dd3fc; }
+  .skip-note { font-family:'Space Mono',monospace; font-size:.75rem; color:var(--accent2); margin-top:4px; }
+  .results-nav { display:flex; gap:12px; justify-content:center; margin-top:40px; flex-wrap:wrap; }
+
+  @media(max-width:560px){
+    .question-card { padding:20px 16px; }
+    .q-code { font-size:.74rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="quiz-top">
+      <a class="back-home-btn" href="index.html">← Home</a>
+      <div class="quiz-title-block">
+        <h2>🧩 Snippets</h2>
+        <p>40 code snippets · 4 phases · easy → summit</p>
+      </div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 40</span>
+      <span id="scoreTrack">Score: 0</span>
+    </div>
+    <div id="phaseLabel" class="phase-label"></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="backBtn" onclick="prevQuestion()">← Back</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" disabled>Next →</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#252a38" stroke-width="12"/>
+          <circle id="ringArc" cx="90" cy="90" r="78" fill="none" stroke="url(#rg)" stroke-width="12"
+            stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#34d399"/>
+              <stop offset="100%" stop-color="#0ea5e9"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-ring-text">
+          <div class="score-big" id="scoreBig">—</div>
+          <div class="score-sub">/ 40</div>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="verdict-sub" id="verdictSub"></div>
+    </div>
+    <div class="phase-stats" id="phaseStats"></div>
+    <div class="review-header">📋 Full Answer Analysis <span></span></div>
+    <div id="reviewList"></div>
+    <div class="results-nav">
+      <a class="btn btn-ghost" href="index.html">← Back to Hub</a>
+      <button class="btn btn-primary" onclick="restartQuiz()">↺ Retake Quiz</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* ============================================================
+   DATA — Master Integration Snippets (40 Qs)
+   phase: 0=Collections & Syntax, 1=OOP & Exceptions,
+          2=NumPy/Pandas/Matplotlib, 3=DB & Hard Integration
+============================================================ */
+const PHASES = [
+  '🧩 Phase 1: Collections & Syntax',
+  '🧬 Phase 2: OOP & Exceptions',
+  '📊 Phase 3: NumPy, Pandas & Matplotlib',
+  '🏔️ Phase 4: Database & Hard Integration'
+];
+
+const questions = [
+
+  // ── PHASE 1: COLLECTIONS & SYNTAX (Q1–10) ──
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`a = [10, 20, 30]\nb = a\nb.append(40)\nprint(len(a))`,
+    opts:["3 (Integer)","4 (Integer)","Error (Logic)","0 (Integer)"],
+    ans:1,
+    expl:`<code>b = a</code> doesn't copy the list — both point to the <strong>same object</strong>. So <code>b.append(40)</code> mutates the shared list. <code>len(a)</code> is now <strong>4</strong>. Use <code>b = a.copy()</code> for an independent list.`
+  },
+  {
+    phase:0,
+    text:"Analyze the result:",
+    code:`d = {"id": 101, "name": "A"}\nprint(d.get("age", 25))`,
+    opts:["KeyError (Error)","None (Object)","25 (Integer)","101 (Integer)"],
+    ans:2,
+    expl:`<code>dict.get(key, default)</code> returns the <strong>default</strong> when the key is missing, instead of raising a <code>KeyError</code>. Since <code>"age"</code> isn't in <code>d</code>, it returns <strong>25</strong>.`
+  },
+  {
+    phase:0,
+    text:"What is printed?",
+    code:`x = "Python"\nprint(x[1:4:2])`,
+    opts:["yth (String)","yh (String)","pth (String)","yo (String)"],
+    ans:1,
+    expl:`<code>x[1:4:2]</code> starts at index 1 (<code>'y'</code>), goes up to index 4 (exclusive), stepping by 2. Indices visited: 1→<code>'y'</code>, 3→<code>'h'</code>. Result: <strong>yh</strong>.`
+  },
+  {
+    phase:0,
+    text:"What is the type?",
+    code:`x = {1, 2, 2, 3}\nprint(type(x))`,
+    opts:["list (Class)","tuple (Class)","set (Class)","dict (Class)"],
+    ans:2,
+    expl:`<code>{1, 2, 2, 3}</code> uses curly braces with values (not key:value pairs), creating a <strong>set</strong>. Duplicates are removed automatically → <code>{1, 2, 3}</code>. An empty <code>{}</code> would be a dict — that's the only exception.`
+  },
+  {
+    phase:0,
+    text:"Result of this operation:",
+    code:`s = "Hi"\nprint(s * 2 + "!")`,
+    opts:["Hi2! (String)","HiHi! (String)","Hi!Hi! (String)","Error (Type)"],
+    ans:1,
+    expl:`<code>s * 2</code> repeats the string → <code>"HiHi"</code>. Then <code>"HiHi" + "!"</code> concatenates → <strong>HiHi!</strong>. <code>*</code> has higher precedence than <code>+</code>, so repetition happens first.`
+  },
+  {
+    phase:0,
+    text:"What is the value of x?",
+    code:`x = 10 // 3 ** 2`,
+    opts:["1 (Integer)","1.11 (Float)","0 (Integer)","9 (Integer)"],
+    ans:0,
+    expl:`<code>**</code> has higher precedence than <code>//</code>. Evaluates as <code>10 // (3 ** 2)</code> = <code>10 // 9</code> = <strong>1</strong> (floor division). If it were <code>(10 // 3) ** 2</code> = <code>3 ** 2</code> = 9.`
+  },
+  {
+    phase:0,
+    text:"Identify the output:",
+    code:`for i in range(2):\n    print(i, end="-")`,
+    opts:["0-1-2-","0-1-","1-2-","0-1"],
+    ans:1,
+    expl:`<code>range(2)</code> generates <code>0, 1</code>. <code>end="-"</code> replaces the newline with a dash. Output: <code>0-</code> then <code>1-</code> → <strong>0-1-</strong>. No trailing newline, just the dash after each number.`
+  },
+  {
+    phase:0,
+    text:"What does this return?",
+    code:`def f(a, b=5):\n    return a + b\nprint(f(2))`,
+    opts:["2 (Integer)","5 (Integer)","7 (Integer)","Error (Arg)"],
+    ans:2,
+    expl:`<code>b=5</code> is a <strong>default argument</strong>. When <code>f(2)</code> is called with only one argument, <code>b</code> takes its default value of 5. <code>a + b</code> = <code>2 + 5</code> = <strong>7</strong>.`
+  },
+  {
+    phase:0,
+    text:"What is the output?",
+    code:`a = (1, 2)\nb = (3,)\nprint(a + b)`,
+    opts:["(1, 2, 3)","(1, 2, (3))","Error (Type)","(4, 2)"],
+    ans:0,
+    expl:`<code>+</code> on tuples performs <strong>concatenation</strong>, not element-wise addition. <code>(1, 2) + (3,)</code> → <strong>(1, 2, 3)</strong>. Note: <code>(3)</code> is just the integer 3 in parentheses — the trailing comma <code>(3,)</code> is what makes it a single-element tuple.`
+  },
+  {
+    phase:0,
+    text:"Boolean check:",
+    code:`print(bool([]) == bool(0))`,
+    opts:["True (Bool)","False (Bool)","Error (Logic)","None (Object)"],
+    ans:0,
+    expl:`<code>bool([])</code> → <code>False</code> (empty list is falsy). <code>bool(0)</code> → <code>False</code> (zero is falsy). So <code>False == False</code> → <strong>True</strong>. Both empty containers and zero share the same falsy boolean value.`
+  },
+
+  // ── PHASE 2: OOP & EXCEPTIONS (Q11–20) ──
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`class A:\n    def __init__(self):\n        self.x = 1\nobj = A()\nprint(obj.x)`,
+    opts:["A (Class)","1 (Integer)","None (Object)","Error (Attr)"],
+    ans:1,
+    expl:`<code>__init__</code> sets <code>self.x = 1</code> when the object is created. Accessing <code>obj.x</code> retrieves that stored value → <strong>1</strong>.`
+  },
+  {
+    phase:1,
+    text:"Exception check:",
+    code:`try:\n    print(10/0)\nexcept Exception:\n    print("E")\nfinally:\n    print("F")`,
+    opts:["E (String)","F (String)","E F","Error (Math)"],
+    ans:2,
+    expl:`<code>10/0</code> raises <code>ZeroDivisionError</code> (a subclass of <code>Exception</code>), so <code>except Exception</code> catches it → prints <code>"E"</code>. Then <code>finally</code> <strong>always</strong> runs → prints <code>"F"</code>. Output: <strong>E</strong> then <strong>F</strong>.`
+  },
+  {
+    phase:1,
+    text:"Inheritance check:",
+    code:`class P: x = 10\nclass C(P): pass\nobj = C()\nprint(obj.x)`,
+    opts:["10 (Integer)","None (Object)","Error (Inherit)","0 (Integer)"],
+    ans:0,
+    expl:`<code>C</code> inherits from <code>P</code> and adds nothing new. When Python looks up <code>obj.x</code>, it finds no instance attribute, then checks the class <code>C</code>, then the parent <code>P</code> — finds <code>x = 10</code> there → prints <strong>10</strong>.`
+  },
+  {
+    phase:1,
+    text:"What happens here?",
+    code:`class Test:\n    def __init__(self):\n        self.__v = 5\nt = Test()\nprint(t.__v)`,
+    opts:["5 (Integer)","AttributeError","None (Object)","Private (String)"],
+    ans:1,
+    expl:`<code>__v</code> triggers <strong>name mangling</strong> — it's stored internally as <code>_Test__v</code>. Accessing <code>t.__v</code> from outside the class doesn't find <code>_Test__v</code>, so Python raises <code>AttributeError</code>. Use <code>t._Test__v</code> to access it.`
+  },
+  {
+    phase:1,
+    text:"User Exception:",
+    code:`class MyErr(Exception): pass\ntry:\n    raise MyErr("Hi")\nexcept MyErr as e:\n    print(e)`,
+    opts:["MyErr (Type)","Hi (String)","Error (Syntax)","None (Object)"],
+    ans:1,
+    expl:`<code>raise MyErr("Hi")</code> creates a custom exception with the message <code>"Hi"</code>. <code>except MyErr as e</code> catches it and binds it to <code>e</code>. <code>print(e)</code> calls <code>str(e)</code> which returns the message → <strong>Hi</strong>.`
+  },
+  {
+    phase:1,
+    text:"Super() usage:",
+    code:`class A:\n    def s(self): return "A"\nclass B(A):\n    def s(self): return super().s() + "B"\nprint(B().s())`,
+    opts:["AB (String)","B (String)","A (String)","Error (Super)"],
+    ans:0,
+    expl:`<code>B().s()</code> calls <code>B.s</code>. Inside it, <code>super().s()</code> calls <code>A.s()</code> → returns <code>"A"</code>. Then <code>"A" + "B"</code> → <strong>AB</strong>. This is how method chaining with <code>super()</code> builds on parent behaviour.`
+  },
+  {
+    phase:1,
+    text:"What is the output?",
+    code:`try:\n    x = int("1.5")\nexcept ValueError:\n    print("V")`,
+    opts:["1 (Integer)","1.5 (Float)","V (String)","Error (Type)"],
+    ans:2,
+    expl:`<code>int("1.5")</code> raises a <code>ValueError</code> — <code>int()</code> cannot parse a decimal string directly. You'd need <code>int(float("1.5"))</code>. The <code>except ValueError</code> catches it → prints <strong>V</strong>.`
+  },
+  {
+    phase:1,
+    text:"Class variable check:",
+    code:`class X:\n    c = 0\n    def __init__(self):\n        X.c += 1\na, b = X(), X()\nprint(X.c)`,
+    opts:["0 (Integer)","1 (Integer)","2 (Integer)","3 (Integer)"],
+    ans:2,
+    expl:`Each time an instance is created, <code>__init__</code> runs <code>X.c += 1</code>, incrementing the <strong>class variable</strong>. Two instances are created → <code>X.c</code> is incremented twice → <strong>2</strong>.`
+  },
+  {
+    phase:1,
+    text:"Method Overriding:",
+    code:`class A:\n    def m(self): print("A")\nclass B(A):\n    def m(self): print("B")\nobj = B()\nobj.m()`,
+    opts:["A (String)","B (String)","AB (String)","Error (Logic)"],
+    ans:1,
+    expl:`<code>obj</code> is an instance of <code>B</code>. Python's MRO looks up <code>m()</code> in <code>B</code> first — finds it, runs it → prints <strong>B</strong>. <code>A.m()</code> is overridden and never called unless explicitly invoked via <code>super()</code>.`
+  },
+  {
+    phase:1,
+    text:"Finally behavior:",
+    code:`def f():\n    try: return 1\n    finally: return 2\nprint(f())`,
+    opts:["1 (Integer)","2 (Integer)","1 2","None (Object)"],
+    ans:1,
+    expl:`Classic Python trap: <code>finally</code> executes <strong>before the function actually returns</strong>, even when there's a <code>return</code> in <code>try</code>. If <code>finally</code> also has a <code>return</code>, it <strong>overrides</strong> the <code>try</code> return. So <code>return 2</code> wins → prints <strong>2</strong>.`
+  },
+
+  // ── PHASE 3: NUMPY, PANDAS & MATPLOTLIB (Q21–30) ──
+  {
+    phase:2,
+    text:"NumPy Shape:",
+    code:`import numpy as np\na = np.array([[1], [2], [3]])\nprint(a.shape)`,
+    opts:["(3,) (Tuple)","(1, 3) (Tuple)","(3, 1) (Tuple)","(3) (Integer)"],
+    ans:2,
+    expl:`The input is a list of 3 lists, each containing 1 element. NumPy shape convention is <code>(rows, columns)</code> → <strong>(3, 1)</strong>. <code>(3,)</code> would be a flat 1D array. <code>(1, 3)</code> would be 1 row of 3 columns.`
+  },
+  {
+    phase:2,
+    text:"Pandas Select:",
+    code:`import pandas as pd\ndf = pd.DataFrame({'A': [1, 2], 'B': [3, 4]})\nprint(df.iloc[0, 1])`,
+    opts:["1 (Integer)","3 (Integer)","2 (Integer)","4 (Integer)"],
+    ans:1,
+    expl:`<code>df.iloc[row, col]</code> uses <strong>integer position</strong>. Row 0, Column 1 → column <code>'B'</code> at row 0 → value <strong>3</strong>. Column 0 would be <code>'A'</code> → value 1. Don't confuse with <code>df.loc</code> which uses labels.`
+  },
+  {
+    phase:2,
+    text:"NumPy Broadcast:",
+    code:`import numpy as np\na = np.array([1, 2])\nprint(a + 10)`,
+    opts:["[11, 12]","[1, 2, 10]","Error (Shape)","[11, 2]"],
+    ans:0,
+    expl:`Adding a scalar to a NumPy array uses <strong>broadcasting</strong> — the scalar 10 is applied to every element. <code>[1, 2] + 10</code> → <strong>[11, 12]</strong>. This is one of NumPy's most-used features and works for any arithmetic operation.`
+  },
+  {
+    phase:2,
+    text:"Pandas Grouping:",
+    code:`import pandas as pd\ndf = pd.DataFrame({'G': ['A', 'A'], 'V': [10, 20]})\nprint(df.groupby('G').sum().iloc[0,0])`,
+    opts:["10 (Integer)","20 (Integer)","30 (Integer)","15 (Integer)"],
+    ans:2,
+    expl:`<code>groupby('G').sum()</code> groups both rows under <code>'A'</code> and sums the <code>V</code> column: <code>10 + 20 = 30</code>. <code>.iloc[0,0]</code> retrieves the first (and only) row, first column → <strong>30</strong>.`
+  },
+  {
+    phase:2,
+    text:"Matplotlib plot — what is the x-axis value when y=20?",
+    code:`import matplotlib.pyplot as plt\nplt.plot([1, 2], [10, 20])\n# What is x-axis value at y=20?`,
+    opts:["1 (Integer)","2 (Integer)","10 (Integer)","0 (Integer)"],
+    ans:1,
+    expl:`<code>plt.plot([1, 2], [10, 20])</code> maps x-values <code>[1, 2]</code> to y-values <code>[10, 20]</code>. At <code>y=20</code>, the corresponding x-value is the second element → <strong>2</strong>.`
+  },
+  {
+    phase:2,
+    text:"NumPy Slice:",
+    code:`import numpy as np\na = np.array([0, 1, 2, 3])\nprint(a[1:3])`,
+    opts:["[1, 2, 3]","[1, 2]","[2, 3]","[0, 1]"],
+    ans:1,
+    expl:`<code>a[1:3]</code> slices from index 1 up to but <strong>not including</strong> index 3. Values at indices 1 and 2 are <code>1</code> and <code>2</code> → <strong>[1 2]</strong>. Same slice semantics as Python lists.`
+  },
+  {
+    phase:2,
+    text:"Pandas String Op:",
+    code:`import pandas as pd\ns = pd.Series(['a', 'b'])\nprint((s + '1')[0])`,
+    opts:["a1 (String)","a (String)","1 (String)","Error (Type)"],
+    ans:0,
+    expl:`Adding a string to a Pandas Series of strings performs <strong>element-wise concatenation</strong>. <code>s + '1'</code> → <code>['a1', 'b1']</code>. Index <code>[0]</code> → <strong>a1</strong>.`
+  },
+  {
+    phase:2,
+    text:"NumPy Masking:",
+    code:`import numpy as np\na = np.array([5, 10, 15])\nprint(a[a > 12])`,
+    opts:["[15] (Array)","[True] (Array)","[5, 10] (Array)","Error (Logic)"],
+    ans:0,
+    expl:`<code>a > 12</code> creates a boolean mask: <code>[False, False, True]</code>. Boolean indexing returns elements where mask is <code>True</code>. Only <code>15 > 12</code> → result is <strong>[15]</strong>.`
+  },
+  {
+    phase:2,
+    text:"Pandas Columns:",
+    code:`import pandas as pd\ndf = pd.DataFrame({'x': [1]})\ndf.columns = ['y']\nprint(df.columns[0])`,
+    opts:["x (String)","y (String)","0 (Integer)","None (Object)"],
+    ans:1,
+    expl:`Assigning a list to <code>df.columns</code> <strong>renames all columns in order</strong>. After <code>df.columns = ['y']</code>, the single column is now named <code>'y'</code>. <code>df.columns[0]</code> → <strong>y</strong>.`
+  },
+  {
+    phase:2,
+    text:"Matplotlib Label — where does 'Test' appear?",
+    code:`import matplotlib.pyplot as plt\nplt.title("Test")\n# Where does 'Test' appear?`,
+    opts:["X-axis (Loc)","Y-axis (Loc)","Top (Loc)","Legend (Loc)"],
+    ans:2,
+    expl:`<code>plt.title()</code> places the text at the <strong>top center</strong> of the plot. Use <code>plt.xlabel()</code> for the x-axis label, <code>plt.ylabel()</code> for y-axis, and <code>plt.legend()</code> for the legend.`
+  },
+
+  // ── PHASE 4: DATABASE & HARD INTEGRATION (Q31–40) ──
+  {
+    phase:3,
+    text:"DB Cursor:",
+    code:`import sqlite3\nc = sqlite3.connect(':memory:').cursor()\nc.execute("SELECT 1")\nprint(c.fetchone()[0])`,
+    opts:["1 (Integer)","(1,) (Tuple)","None (Object)","Error (Syntax)"],
+    ans:0,
+    expl:`<code>SELECT 1</code> is a valid SQL query that returns a single row with value <code>1</code>. <code>fetchone()</code> returns a tuple <code>(1,)</code>. Indexing <code>[0]</code> extracts the first element → <strong>1</strong>. This is commonly used to test a database connection is alive.`
+  },
+  {
+    phase:3,
+    text:"The Shallow Copy Trap:",
+    code:`import numpy as np\na = np.array([1, 2])\nb = a.view()\nb[0] = 99\nprint(a[0])`,
+    opts:["1 (Integer)","99 (Integer)","0 (Integer)","Error (Logic)"],
+    ans:1,
+    expl:`<code>a.view()</code> creates a <strong>view</strong> — a new array object that shares the same underlying data buffer as <code>a</code>. Modifying <code>b[0] = 99</code> modifies the shared memory → <code>a[0]</code> also becomes <strong>99</strong>. Use <code>a.copy()</code> for a truly independent copy.`
+  },
+  {
+    phase:3,
+    text:"DB Insert logic (no commit, then select in same session):",
+    code:`# Assume table is empty\nc.execute("INSERT INTO u VALUES (?)", (1,))\n# No commit() called\nc.execute("SELECT * FROM u")\nprint(len(c.fetchall()))`,
+    opts:["0 (Integer)","1 (Integer)","Error (Lock)","1 (Cursor)"],
+    ans:1,
+    expl:`Within the <strong>same connection and transaction</strong>, uncommitted changes are visible to subsequent queries on the same cursor. The INSERT is in the pending transaction — the SELECT sees it. <code>len(fetchall())</code> → <strong>1</strong>. Other connections wouldn't see it until <code>commit()</code>.`
+  },
+  {
+    phase:3,
+    text:"Nested Try logic:",
+    code:`try:\n    try: raise ValueError\n    finally: print("A", end="")\nexcept: print("B")`,
+    opts:["AB (String)","A (String)","B (String)","Error (Logic)"],
+    ans:0,
+    expl:`The inner <code>raise ValueError</code> triggers the inner <code>finally</code> → prints <code>"A"</code>. The <code>ValueError</code> is not caught by the inner <code>try</code> (no <code>except</code>), so it propagates to the outer <code>try</code>. The outer <code>except</code> catches it → prints <code>"B"</code>. Total output: <strong>AB</strong>.`
+  },
+  {
+    phase:3,
+    text:"MRO Challenge:",
+    code:`class X: pass\nclass Y(X): pass\nclass Z(Y): pass\nprint(Z.mro()[2] == X)`,
+    opts:["True (Bool)","False (Bool)","Error (Attr)","None (Object)"],
+    ans:0,
+    expl:`<code>Z.mro()</code> returns the Method Resolution Order: <code>[Z, Y, X, object]</code>. Index <code>[2]</code> is <code>X</code>. <code>X == X</code> → <strong>True</strong>. The MRO always goes: class → parents left to right → object.`
+  },
+  {
+    phase:3,
+    text:"NumPy Flatten:",
+    code:`import numpy as np\na = np.array([[1, 2], [3, 4]])\nprint(a.ravel()[1])`,
+    opts:["1 (Integer)","2 (Integer)","3 (Integer)","4 (Integer)"],
+    ans:1,
+    expl:`<code>a.ravel()</code> flattens the 2D array row-by-row into 1D: <code>[1, 2, 3, 4]</code>. Index <code>[1]</code> → <strong>2</strong>. <code>ravel()</code> returns a view when possible (unlike <code>flatten()</code> which always copies).`
+  },
+  {
+    phase:3,
+    text:"Pandas Null check:",
+    code:`import pandas as pd\nimport numpy as np\ns = pd.Series([1, np.nan])\nprint(s.isnull()[0])`,
+    opts:["True (Bool)","False (Bool)","NaN (Object)","Error (Logic)"],
+    ans:1,
+    expl:`<code>s.isnull()</code> returns a boolean Series: <code>True</code> where values are <code>NaN</code>, <code>False</code> otherwise. Index <code>[0]</code> is the value <code>1</code> (not NaN) → <strong>False</strong>. <code>s.isnull()[1]</code> would be <code>True</code>.`
+  },
+  {
+    phase:3,
+    text:"DB fetchmany (assume 10 rows exist after query):",
+    code:`# Assume 10 rows exist\nrows = cursor.fetchmany(size=2)\nprint(len(rows))`,
+    opts:["1 (Integer)","2 (Integer)","10 (Integer)","0 (Integer)"],
+    ans:1,
+    expl:`<code>cursor.fetchmany(size=n)</code> retrieves the <strong>next n rows</strong> from the result set. With <code>size=2</code>, it returns exactly 2 rows (as long as 2+ remain). <code>len(rows)</code> → <strong>2</strong>. Use this for memory-efficient processing of large result sets.`
+  },
+  {
+    phase:3,
+    text:"Multi-Inheritance Init:",
+    code:`class A:\n    def __init__(self): print("A", end="")\nclass B(A):\n    def __init__(self):\n        print("B", end="")\n        super().__init__()\nB()`,
+    opts:["AB (String)","BA (String)","B (String)","Error (Init)"],
+    ans:1,
+    expl:`<code>B()</code> calls <code>B.__init__</code>. First it prints <code>"B"</code>, then <code>super().__init__()</code> calls <code>A.__init__</code> → prints <code>"A"</code>. Output order: <strong>BA</strong>. The print happens before the super call.`
+  },
+  {
+    phase:3,
+    text:"THE FINAL BOSS:",
+    code:`import pandas as pd\ndf = pd.DataFrame({'a': [1, 2]})\ndf2 = df\ndf2['a'] = [3, 4]\nprint(df['a'][0])`,
+    opts:["1 (Integer)","3 (Integer)","2 (Integer)","4 (Integer)"],
+    ans:1,
+    expl:`<code>df2 = df</code> creates a <strong>reference</strong>, not a copy — both point to the same DataFrame object. <code>df2['a'] = [3, 4]</code> modifies the shared object in place. So <code>df['a'][0]</code> also sees the new values → <strong>3</strong>. Use <code>df2 = df.copy()</code> to avoid this.`
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = 0, score = 0, answered = false;
+let userAnswers = new Array(questions.length).fill(null);
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderQuestion() {
+  answered = false;
+  const q = questions[current];
+  document.getElementById('progressBar').style.width = (current / questions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+  document.getElementById('phaseLabel').textContent = PHASES[q.phase];
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('backBtn').disabled = current === 0;
+
+  const L = ['A','B','C','D'];
+  document.getElementById('questionArea').innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Q${current + 1}</div>
+      <div class="q-text">${q.text}</div>
+      <div class="q-code">${esc(q.code)}</div>
+      <div class="options">
+        ${q.opts.map((o,i) => `
+          <button class="option-btn" id="opt${i}" onclick="selectAns(${i})">
+            <span class="opt-key">${L[i]}</span><span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation">${q.expl}</div>
+    </div>`;
+
+  if (userAnswers[current] !== null) revealAnswer(userAnswers[current]);
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectAns(idx) {
+  if (answered) return;
+  answered = true;
+  userAnswers[current] = idx;
+  if (idx === questions[current].ans) score++;
+  revealAnswer(idx);
+}
+
+function revealAnswer(idx) {
+  const q = questions[current];
+  q.opts.forEach((_,i) => {
+    const b = document.getElementById(`opt${i}`);
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    else if (i === idx && idx !== q.ans) b.classList.add('wrong');
+  });
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').disabled = false;
+  document.getElementById('scoreTrack').textContent = `Score: ${score}`;
+}
+
+function prevQuestion() {
+  if (current === 0) return;
+  if (userAnswers[current] !== null && userAnswers[current] !== -1)
+    if (userAnswers[current] === questions[current].ans) score--;
+  userAnswers[current] = null;
+  current--;
+  renderQuestion();
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) showResults();
+  else renderQuestion();
+}
+
+/* ============================================================
+   RESULTS
+============================================================ */
+function showResults() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+
+  const pct = score / questions.length;
+  setTimeout(() => {
+    document.getElementById('ringArc').style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+    document.getElementById('ringArc').style.strokeDashoffset = 2 * Math.PI * 78 * (1 - pct);
+  }, 100);
+  document.getElementById('scoreBig').textContent = score;
+
+  const v = pct>=.9 ? ['🏆 Master Integrator!',  'Flawless — you can read Python like a compiler.']
+          : pct>=.75? ['🎯 Sharp Debugger',        'Strong across all topics — a few tricky edge cases to study.']
+          : pct>=.55? ['📚 Getting There',          'Solid base — revisit the Summit phase questions closely.']
+          : pct>=.35? ['🐣 Keep Practising',        'Focus on references, MRO, and library gotchas.']
+          :           ['🔁 Back to Basics',          'Work through each topic quiz first, then retry this one.'];
+  document.getElementById('verdict').textContent = v[0];
+  document.getElementById('verdictSub').textContent = v[1];
+
+  // Phase breakdown
+  const tot=[0,0,0,0], cor=[0,0,0,0];
+  questions.forEach((q,i) => { tot[q.phase]++; if(userAnswers[i]===q.ans) cor[q.phase]++; });
+  const colors=['#34d399','#a78bfa','#f59e0b','#ff5f7e'];
+  const names=['Collections','OOP & Exc.','Libraries','DB & Summit'];
+  document.getElementById('phaseStats').innerHTML = [0,1,2,3].map(p => {
+    const w = tot[p] ? Math.round(cor[p]/tot[p]*100) : 0;
+    return `<div class="phase-stat">
+      <div class="phase-stat-name">${names[p]}</div>
+      <div class="phase-stat-score" style="color:${colors[p]}">${cor[p]}/${tot[p]}</div>
+      <div class="phase-stat-bar"><div class="phase-stat-fill" style="width:0%;background:${colors[p]}" data-w="${w}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(() => document.querySelectorAll('.phase-stat-fill').forEach(el => {
+    el.style.transition='width .8s .3s'; el.style.width=el.dataset.w+'%';
+  }), 150);
+
+  // Review list
+  const L=['A','B','C','D'];
+  document.getElementById('reviewList').innerHTML = questions.map((q,i) => {
+    const ua=userAnswers[i], ok=ua===q.ans, skip=ua===null||ua===-1;
+    return `<div class="review-item ${skip?'':(ok?'r-correct':'r-wrong')}">
+      <div class="review-top">
+        <div class="review-badge">${skip?'—':(ok?'✓':'✗')}</div>
+        <div style="flex:1;min-width:0">
+          <div class="review-q">Q${i+1}. ${q.text}<br><code>${esc(q.code.replace(/\n/g,' | '))}</code></div>
+          ${skip?'<div class="skip-note">⚡ Not answered</div>':''}
+        </div>
+      </div>
+      <div class="review-detail">
+        ${!skip?`<div><span class="lbl ${ok?'corr-ans':'your-ans'}">${ok?'✓':'✗'} Your answer:</span> <span class="${ok?'corr-ans':'your-ans'}">${L[ua]} — ${q.opts[ua]}</span></div>`:''}
+        ${!ok?`<div><span class="lbl corr-ans">✓ Correct:</span> <span class="corr-ans">${L[q.ans]} — ${q.opts[q.ans]}</span></div>`:''}
+        <div class="expl-text">💡 ${q.expl}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function restartQuiz() {
+  current=0; score=0; answered=false;
+  userAnswers=new Array(questions.length).fill(null);
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
