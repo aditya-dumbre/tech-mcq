@@ -5,415 +5,1521 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>🐍 Python Quiz Hub</title>
 <style>
-  /* ── OFFLINE FONTS ── */
-  @font-face {
-    font-family: 'Display';
-    src: local('Futura'), local('Century Gothic'), local('Trebuchet MS');
-  }
-  @font-face {
-    font-family: 'Mono';
-    src: local('Courier New'), local('Courier'), local('Lucida Console');
-  }
+@font-face{font-family:'Syne';src:local('Futura'),local('Century Gothic'),local('Trebuchet MS');font-weight:400 800;}
+@font-face{font-family:'Mono';src:local('Courier New'),local('Courier'),local('Lucida Console');}
+:root{
+  --bg:#07090f;--s1:#0c0e16;--s2:#10121c;--card:#141824;--border:#1e2438;
+  --text:#e2e8f8;--muted:#4e5a7a;--dim:#7a88aa;
+  --c0:#00e5a0;--c1:#38bdf8;--c2:#f59e0b;--c3:#a78bfa;
+  --c4:#fb923c;--c5:#f43f5e;--c6:#e879f9;--c7:#34d399;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(0,229,160,.06),transparent),radial-gradient(ellipse 60% 40% at 85% 110%,rgba(167,139,250,.06),transparent);pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:44px 24px 100px;}
 
-  :root {
-    --bg:       #07090f;
-    --surface:  #0e1118;
-    --card:     #13161f;
-    --border:   #1e2235;
-    --border-h: #2e3450;
-    --text:     #dde2f0;
-    --muted:    #5a6285;
-    --dim:      #8892b0;
+/* ── TAB SWITCHER ── */
+.switcher{display:flex;align-items:center;margin-bottom:44px;}
+.switcher-track{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:5px;gap:4px;position:relative;}
+.sw-btn{position:relative;display:flex;align-items:center;gap:10px;padding:12px 28px;border-radius:10px;font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:color .25s;z-index:1;letter-spacing:.01em;}
+.sw-btn .sw-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:0;transition:opacity .25s,transform .25s;transform:scale(0);}
+.sw-btn.active{color:var(--text);}
+.sw-btn.active .sw-dot{opacity:1;transform:scale(1);}
+.sw-btn.active.mcq{color:#38bdf8;}
+.sw-btn.active.code{color:#00e5a0;}
+.sw-pill{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;transition:left .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:0;}
+.panel{display:none;animation:fadeSlide .3s ease;}
+.panel.active{display:block;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* topic accent palette */
-    --c0: #00e5a0;   /* OOP        — teal   */
-    --c1: #38bdf8;   /* Collection — sky    */
-    --c2: #f59e0b;   /* Libraries  — amber  */
-    --c3: #a78bfa;   /* Database   — violet */
-    --c4: #f9ff84;   /* Loops      — orange */
-    --c5: #f43f5e;   /* Mock       — rose   */
-    --c6: #f5b5ff;   /* Exceptions — fuchsia */
-    --c7: #77fffd;   /* Snippets   — emerald */
-  }
+/* ── MCQ GRID ── */
+.mcq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.qcard{position:relative;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 22px 20px;cursor:pointer;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px;overflow:hidden;transition:border-color .2s,transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;}
+.qcard::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--ac) 0%,transparent 55%);opacity:0;transition:opacity .25s;}
+.qcard:hover{transform:translateY(-4px);border-color:var(--ac);box-shadow:0 12px 36px -8px color-mix(in srgb,var(--ac) 25%,transparent);}
+.qcard:hover::after{opacity:.05;}
+.qcard-top{position:absolute;top:0;left:22px;right:22px;height:2px;background:var(--ac);border-radius:0 0 8px 8px;opacity:0;transition:opacity .25s;}
+.qcard:hover .qcard-top{opacity:1;}
+.qcard-num{position:absolute;top:18px;right:18px;font-family:'Mono',monospace;font-size:.65rem;color:var(--muted);letter-spacing:.06em;}
+.qcard-ico{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:color-mix(in srgb,var(--ac) 12%,transparent);border:1px solid color-mix(in srgb,var(--ac) 18%,transparent);transition:transform .2s;}
+.qcard:hover .qcard-ico{transform:scale(1.1) rotate(-5deg);}
+.qcard-title{font-size:1.05rem;font-weight:700;letter-spacing:-.01em;}
+.qcard-desc{font-size:.8rem;color:var(--dim);line-height:1.55;flex:1;}
+.qcard-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);margin-top:2px;}
+.qcard-meta{display:flex;gap:8px;}
+.pill{font-family:'Mono',monospace;font-size:.64rem;letter-spacing:.04em;padding:3px 9px;border-radius:99px;background:var(--s2);border:1px solid var(--border);color:var(--muted);}
+.pill.hi{background:color-mix(in srgb,var(--ac) 12%,transparent);border-color:color-mix(in srgb,var(--ac) 22%,transparent);color:var(--ac);}
+.qarrow{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem;transition:all .2s;}
+.qcard:hover .qarrow{background:var(--ac);border-color:var(--ac);color:#000;transform:translateX(3px);}
+.qcard.soon{opacity:.5;cursor:default;pointer-events:none;}
+.soon-lbl{font-family:'Mono',monospace;font-size:.62rem;letter-spacing:.07em;text-transform:uppercase;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--muted);}
+.qcard.featured{grid-column:1/-1;flex-direction:row;align-items:center;gap:20px;padding:22px 28px;}
+.qcard.featured .qcard-body{flex:1;display:flex;flex-direction:column;gap:6px;}
+.qcard.featured .qcard-ico{width:52px;height:52px;font-size:1.7rem;flex-shrink:0;}
+.qcard.featured .qcard-foot{border-top:none;padding-top:0;margin-top:0;}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── SECTION LABEL ── */
+.sec{display:flex;align-items:center;gap:12px;font-family:'Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:18px;}
+.sec::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Display', 'Trebuchet MS', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ══════════════════════════════════════
+   COLLAPSIBLE PROBLEM STATEMENT
+══════════════════════════════════════ */
+.ps-wrap{display:flex;flex-direction:column;gap:10px;margin-bottom:44px;}
 
-  /* ── subtle dot-grid bg ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: radial-gradient(circle, #1e2235 1px, transparent 1px);
-    background-size: 32px 32px;
-    opacity: .55;
-    pointer-events: none;
-    z-index: 0;
-  }
+.ps-accordion{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  transition:border-color .25s,box-shadow .25s;
+}
+.ps-accordion.open{
+  border-color:var(--pa);
+  box-shadow:0 4px 24px -6px color-mix(in srgb,var(--pa) 18%,transparent);
+}
 
-  /* ── glowing orbs ── */
-  .orb {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(120px);
-    opacity: .12;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .orb-1 { width: 600px; height: 600px; background: var(--c0); top: -200px; left: -150px; }
-  .orb-2 { width: 500px; height: 500px; background: var(--c5); bottom: -150px; right: -100px; }
+.ps-trigger{
+  display:flex;align-items:center;gap:14px;
+  padding:18px 20px;
+  cursor:pointer;
+  user-select:none;
+  background:transparent;
+  width:100%;border:none;color:inherit;font-family:'Syne',sans-serif;
+}
+.ps-trigger-ico{
+  width:42px;height:42px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;flex-shrink:0;
+  background:color-mix(in srgb,var(--pa) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--pa) 22%,transparent);
+  transition:transform .2s;
+}
+.ps-accordion.open .ps-trigger-ico{transform:scale(1.08);}
+.ps-trigger-info{flex:1;text-align:left;}
+.ps-trigger-title{font-size:1rem;font-weight:800;letter-spacing:-.01em;margin-bottom:2px;}
+.ps-trigger-sub{font-family:'Mono',monospace;font-size:.7rem;color:var(--pa);letter-spacing:.04em;}
+.ps-trigger-chev{
+  width:30px;height:30px;border-radius:8px;
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:.75rem;flex-shrink:0;
+  transition:transform .35s,background .2s,border-color .2s,color .2s;
+}
+.ps-accordion.open .ps-trigger-chev{
+  transform:rotate(180deg);
+  background:color-mix(in srgb,var(--pa) 12%,transparent);
+  border-color:color-mix(in srgb,var(--pa) 28%,transparent);
+  color:var(--pa);
+}
 
-  /* ── layout ── */
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 1060px;
-    margin: 0 auto;
-    padding: 60px 24px;
-  }
+.ps-content{
+  max-height:0;overflow:hidden;
+  transition:max-height .45s cubic-bezier(.4,0,.2,1);
+}
+.ps-accordion.open .ps-content{max-height:9000px;}
 
-  /* ── grid ── */
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 16px;
-  }
+.ps-inner{padding:0 26px 26px;}
+.ps-divider{height:1px;background:var(--border);margin-bottom:24px;}
 
-  /* ── topic card ── */
-  .card {
-    position: relative;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 24px 24px;
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    overflow: hidden;
-    transition:
-      border-color .2s,
-      transform .2s cubic-bezier(.34,1.56,.64,1),
-      box-shadow .2s;
-  }
-  .card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--accent-color) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity .25s;
-  }
-  .card:hover {
-    transform: translateY(-4px) scale(1.01);
-    border-color: var(--accent-color);
-    box-shadow: 0 12px 40px -8px color-mix(in srgb, var(--accent-color) 30%, transparent);
-  }
-  .card:hover::before { opacity: .06; }
-  .card:active { transform: scale(.98); }
+/* Blurb */
+.ps-blurb{font-size:.93rem;color:var(--text);line-height:1.72;margin-bottom:26px;
+  padding:14px 16px;border-radius:10px;
+  background:color-mix(in srgb,var(--pa) 6%,transparent);
+  border-left:3px solid color-mix(in srgb,var(--pa) 50%,transparent);}
+.ps-blurb strong{color:var(--pa);}
 
-  /* accent line top */
-  .card-line {
-    position: absolute;
-    top: 0; left: 24px; right: 24px;
-    height: 2px;
-    border-radius: 0 0 99px 99px;
-    background: var(--accent-color);
-    opacity: 0;
-    transition: opacity .25s;
-  }
-  .card:hover .card-line { opacity: 1; }
+/* Group heading */
+.ps-group{font-family:"Mono",monospace;font-size:.67rem;letter-spacing:.1em;
+  text-transform:uppercase;
+  color:color-mix(in srgb,var(--pa,var(--c1)) 75%,var(--muted));
+  display:flex;align-items:center;gap:8px;margin:24px 0 10px;
+  padding:5px 10px;border-radius:6px;
+  background:color-mix(in srgb,var(--pa,var(--c1)) 5%,transparent);
+  border-left:2px solid color-mix(in srgb,var(--pa,var(--c1)) 35%,transparent);}
+.ps-group::after{content:"";flex:1;height:1px;background:var(--border);margin-left:6px;}
 
-  /* number badge */
-  .card-num {
-    position: absolute;
-    top: 20px; right: 20px;
-    font-family: 'Mono', monospace;
-    font-size: .68rem;
-    color: var(--muted);
-    letter-spacing: .06em;
-  }
+/* Req row */
+.ps-reqs{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+.ps-req{display:flex;gap:0;background:var(--s2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.req-ico{
+  min-width:48px;display:flex;align-items:flex-start;justify-content:center;
+  padding:15px 0 0;font-size:1.15rem;
+  background:color-mix(in srgb,var(--pa) 8%,transparent);
+  border-right:1px solid color-mix(in srgb,var(--pa) 16%,transparent);}
+.req-main{padding:13px 16px;}
+.req-head{margin-bottom:5px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+.req-cat{font-family:"Mono",monospace;font-size:.63rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--pa);font-weight:700;
+  background:color-mix(in srgb,var(--pa) 12%,transparent);
+  padding:1px 8px;border-radius:99px;}
+.req-name{font-size:.88rem;font-weight:800;color:var(--text);}
+.req-desc{font-size:.83rem;color:var(--dim);line-height:1.68;}
+.req-desc code{font-family:"Mono",monospace;background:#0a0c13;padding:1px 6px;
+  border-radius:4px;font-size:.78em;color:#7dd3fc;}
 
-  /* icon */
-  .card-icon {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent-color) 20%, transparent);
-    transition: transform .2s;
-  }
-  .card:hover .card-icon { transform: scale(1.08) rotate(-4deg); }
+/* PS action bar */
+.ps-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:20px;}
+.ps-tag-row{display:flex;flex-wrap:wrap;gap:6px;flex:1;}
+.ps-tag{font-family:"Mono",monospace;font-size:.63rem;padding:4px 11px;border-radius:99px;
+  background:color-mix(in srgb,var(--pa) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--pa) 22%,transparent);
+  color:var(--pa);letter-spacing:.04em;}
 
-  .card-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: -.01em;
-  }
-  .card-desc {
-    font-size: .83rem;
-    color: var(--dim);
-    line-height: 1.55;
-    flex: 1;
-  }
+/* Buttons */
+.ps-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;
+  font-family:"Syne",sans-serif;font-size:.8rem;font-weight:700;
+  cursor:pointer;border:none;transition:background .2s,box-shadow .2s,color .2s;}
+.btn-hint{background:color-mix(in srgb,var(--pa) 10%,transparent);
+  border:1px solid color-mix(in srgb,var(--pa) 25%,transparent);color:var(--pa);}
+.btn-hint:hover{background:color-mix(in srgb,var(--pa) 18%,transparent);
+  box-shadow:0 0 14px color-mix(in srgb,var(--pa) 18%,transparent);}
+.btn-sol{background:rgba(255,79,110,.08);border:1px solid rgba(255,79,110,.2);color:#ff4f6e;}
+.btn-sol:hover{background:rgba(255,79,110,.16);}
 
-  /* footer row */
-  .card-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
-    margin-top: 4px;
-  }
-  .card-meta {
-    display: flex;
-    gap: 12px;
-  }
-  .badge {
-    font-family: 'Mono', monospace;
-    font-size: .68rem;
-    letter-spacing: .05em;
-    padding: 3px 9px;
-    border-radius: 99px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-  .badge.accent {
-    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
-    border-color: color-mix(in srgb, var(--accent-color) 25%, transparent);
-    color: var(--accent-color);
-  }
-  .card-arrow {
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--muted);
-    font-size: .9rem;
-    transition: background .2s, border-color .2s, color .2s, transform .2s;
-  }
-  .card:hover .card-arrow {
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-    color: #000;
-    transform: translateX(3px);
-  }
+/* Hint panel */
+.ps-hint-panel{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1);margin-top:0;}
+.ps-hint-panel.show{max-height:3000px;margin-top:12px;}
+.hint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;
+  background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.hint-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px;}
+.hint-topic{font-family:"Mono",monospace;font-size:.63rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--pa);margin-bottom:6px;font-weight:700;}
+.hint-text{font-size:.8rem;color:var(--dim);line-height:1.55;}
+.hint-text code{font-family:"Mono",monospace;background:#0a0c13;padding:1px 5px;border-radius:4px;font-size:.78em;color:#7dd3fc;}
 
-  /* ── mock card (full width featured) ── */
-  .card.featured {
-    grid-column: 1 / -1;
-    flex-direction: row;
-    align-items: center;
-    gap: 24px;
-    padding: 28px 32px;
-    background: linear-gradient(135deg, #13161f 0%, #17101a 100%);
-  }
-  .card.featured .card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .card.featured .card-icon {
-    width: 60px; height: 60px;
-    font-size: 2rem;
-    flex-shrink: 0;
-  }
-  .card.featured .card-title { font-size: 1.35rem; }
-  .card.featured .card-footer { border-top: none; padding-top: 0; margin-top: 0; }
+/* Solution panel */
+.ps-sol-panel{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1);margin-top:0;}
+.ps-sol-panel.show{max-height:6000px;margin-top:12px;}
+.sol-inner{background:#07090f;border:1px solid rgba(255,79,110,.25);border-radius:10px;overflow:hidden;}
+.sol-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid rgba(255,79,110,.15);background:rgba(255,79,110,.05);}
+.sol-title{font-family:"Mono",monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#ff4f6e;}
+.sol-code{font-family:"Mono",monospace;font-size:.76rem;color:#a5d6fa;padding:14px 16px;line-height:1.7;white-space:pre;overflow-x:auto;}
+.sol-code .kw{color:#c084fc;}
+.sol-code .fn{color:#60a5fa;}
+.sol-code .st{color:#86efac;}
+.sol-code .cm{color:#475569;font-style:italic;}
+.sol-code .nm{color:#fbbf24;}
 
-  /* ── coming soon state ── */
-  .card.soon {
-    opacity: .55;
-    cursor: default;
-    pointer-events: none;
-  }
-  .soon-tag {
-    font-family: 'Mono', monospace;
-    font-size: .65rem;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 99px;
-    background: rgba(255,255,255,.05);
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
+/* ══════════════════════════════════════
+   SNIPPET FLIP CARDS
+══════════════════════════════════════ */
+.snip-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.snip-grid{grid-template-columns:1fr;}}
 
-  @media (max-width: 640px) {
-    .card.featured { flex-direction: column; align-items: flex-start; }
-  }
+.snip-scene{perspective:1200px;min-height:440px;}
+.snip-card{position:relative;transform-style:preserve-3d;transition:transform .65s cubic-bezier(.4,0,.2,1);height:100%;min-height:440px;}
+.snip-card.flipped{transform:rotateY(180deg);}
+.snip-front,.snip-back{position:absolute;inset:0;background:var(--card);border:1px solid var(--border);border-radius:14px;backface-visibility:hidden;overflow:hidden;display:flex;flex-direction:column;}
+.snip-back{transform:rotateY(180deg);border-color:var(--sc,#38bdf8);}
+
+.snip-fhead{display:flex;align-items:center;gap:10px;padding:13px 15px 11px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.snip-dot{width:7px;height:7px;border-radius:50%;background:var(--sc,#38bdf8);box-shadow:0 0 7px var(--sc,#38bdf8);flex-shrink:0;}
+.snip-ftag{font-family:'Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sc,#38bdf8);}
+.snip-ftitle{font-size:.84rem;font-weight:700;margin-left:auto;color:var(--dim);}
+
+.snip-code{font-family:'Mono',monospace;font-size:.74rem;color:#a5d6fa;padding:13px 15px;line-height:1.68;white-space:pre;overflow-x:auto;flex:1;background:#07090f;border-bottom:1px solid var(--border);border-left:3px solid color-mix(in srgb,var(--sc,#38bdf8) 28%,transparent);}
+.snip-code .kw{color:#c084fc;}
+.snip-code .fn{color:#60a5fa;}
+.snip-code .st{color:#86efac;}
+.snip-code .cm{color:#475569;font-style:italic;}
+.snip-code .nm{color:#fbbf24;}
+
+.snip-fbtn{display:flex;align-items:center;justify-content:center;gap:7px;margin:10px 13px;padding:9px;border-radius:9px;border:1px solid color-mix(in srgb,var(--sc,#38bdf8) 30%,transparent);background:color-mix(in srgb,var(--sc,#38bdf8) 8%,transparent);color:var(--sc,#38bdf8);font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;transition:background .2s,box-shadow .2s;flex-shrink:0;}
+.snip-fbtn:hover{background:color-mix(in srgb,var(--sc,#38bdf8) 16%,transparent);box-shadow:0 0 14px color-mix(in srgb,var(--sc,#38bdf8) 18%,transparent);}
+.snip-spin{display:inline-block;transition:transform .35s;}
+.snip-card.flipped .snip-spin{transform:rotate(180deg);}
+
+.snip-bhead{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.snip-btitle{font-size:.8rem;font-weight:700;color:var(--sc,#38bdf8);}
+.snip-bclose{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.72rem;cursor:pointer;background:transparent;transition:border-color .2s,color .2s;}
+.snip-bclose:hover{border-color:var(--sc,#38bdf8);color:var(--sc,#38bdf8);}
+.snip-flow{padding:12px 14px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;}
+.flow-step{display:flex;gap:9px;padding:9px 11px;background:var(--s2);border-radius:8px;border-left:3px solid var(--sc,#38bdf8);}
+.flow-n{width:20px;height:20px;border-radius:5px;background:color-mix(in srgb,var(--sc,#38bdf8) 18%,transparent);color:var(--sc,#38bdf8);font-family:'Mono',monospace;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.flow-title{font-size:.78rem;font-weight:700;margin-bottom:3px;}
+.flow-desc{font-size:.73rem;color:var(--dim);line-height:1.55;}
+.flow-desc code{font-family:'Mono',monospace;background:#0a0c13;padding:1px 4px;border-radius:3px;font-size:.75em;color:#7dd3fc;}
+.flow-mem{font-family:'Mono',monospace;font-size:.66rem;background:#07090f;border:1px solid var(--border);border-radius:5px;padding:5px 9px;margin-top:5px;color:#94a3b8;line-height:1.5;}
+.flow-mem span{color:var(--sc,#38bdf8);}
+
+@media(max-width:640px){
+  .qcard.featured{flex-direction:column;}
+  .snip-grid{grid-template-columns:1fr;}
+  .ps-inner{padding:0 14px 20px;}
+  .ps-trigger{padding:14px 14px;}
+  .ps-trigger-ico{width:36px;height:36px;font-size:1.05rem;}
+}
+
+/* Scroll offset so opened accordion isn't hidden behind top bar */
+.ps-accordion{scroll-margin-top:20px;}
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-
-<div class="wrapper">
-
-  <div class="grid">
-
-    <!-- 1. OOP -->
-    <a class="card" href="oops.html" style="--accent-color: var(--c0)">
-      <div class="card-line"></div>
-      <span class="card-num">01</span>
-      <div class="card-icon">🧱</div>
-      <div class="card-title">Object-Oriented Programming</div>
-      <div class="card-desc">Classes, objects, inheritance, encapsulation, polymorphism, abstraction, dunder methods, and design patterns.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="oops.html">… Qs</span>
-          <span class="badge">Beginner → Hard</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 2. Collections -->
-    <a class="card" href="collections.html" style="--accent-color: var(--c1)">
-      <div class="card-line"></div>
-      <span class="card-num">02</span>
-      <div class="card-icon">📦</div>
-      <div class="card-title">Collections</div>
-      <div class="card-desc">Lists, tuples, sets, dictionaries, comprehensions, slicing, built-in methods, and memory behaviour.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="collections.html">… Qs</span>
-          <span class="badge">Easy → Medium</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 3. Libraries -->
-    <a class="card" href="libraries.html" style="--accent-color: var(--c2)">
-      <div class="card-line"></div>
-      <span class="card-num">03</span>
-      <div class="card-icon">📚</div>
-      <div class="card-title">Libraries</div>
-      <div class="card-desc">Standard library modules, NumPy, Pandas, os, sys, datetime, itertools, functools, and more.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="libraries.html">… Qs</span>
-          <span class="badge">Easy → Medium</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 4. Database -->
-    <a class="card" href="database.html" style="--accent-color: var(--c3)">
-      <div class="card-line"></div>
-      <span class="card-num">04</span>
-      <div class="card-icon">🗄️</div>
-      <div class="card-title">Database</div>
-      <div class="card-desc">SQLite with Python, SQLAlchemy, CRUD operations, queries, ORMs, and connection handling.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="database.html">… Qs</span>
-          <span class="badge">Intermediate</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 5. Loops & Syntax -->
-    <a class="card" href="loops_syntax.html" style="--accent-color: var(--c4)">
-      <div class="card-line"></div>
-      <span class="card-num">05</span>
-      <div class="card-icon">🔁</div>
-      <div class="card-title">Loops &amp; Syntax</div>
-      <div class="card-desc">for/while loops, break/continue/else, comprehensions, operator precedence, data types, and Python gotchas.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="loops_syntax.html">… Qs</span>
-          <span class="badge">Beginner → Medium</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 6. Exception Handling -->
-    <a class="card" href="exceptions.html" style="--accent-color: var(--c6)">
-      <div class="card-line"></div>
-      <span class="card-num">06</span>
-      <div class="card-icon">🛡️</div>
-      <div class="card-title">Exception Handling</div>
-      <div class="card-desc">try/except/else/finally, raising exceptions, custom exceptions, built-in error types, and defensive coding.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="exceptions.html">… Qs</span>
-          <span class="badge">Beginner → Hard</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 7. Snippets -->
-    <a class="card" href="snippets.html" style="--accent-color: var(--c7)">
-      <div class="card-line"></div>
-      <span class="card-num">07</span>
-      <div class="card-icon">🧩</div>
-      <div class="card-title">Snippets</div>
-      <div class="card-desc">Read and predict the output of real code snippets. Covers variables, functions, OOP, loops, and edge-case behaviour.</div>
-      <div class="card-footer">
-        <div class="card-meta">
-          <span class="badge accent q-count" data-src="snippets.html">… Qs</span>
-          <span class="badge">All Levels</span>
-        </div>
-        <div class="card-arrow">→</div>
-      </div>
-    </a>
-
-    <!-- 8. Mock — featured full-width, still locked -->
-    <a class="card featured soon" href="mock.html" style="--accent-color: var(--c5)">
-      <div class="card-line"></div>
-      <div class="card-icon">🏆</div>
-      <div class="card-body">
-        <span class="card-num" style="position:static;font-size:.72rem;color:var(--muted);">08</span>
-        <div class="card-title">Full Mock Test</div>
-        <div class="card-desc">All topics combined. Timed, scored, and analysed — just like a real exam. Take this last to benchmark yourself.</div>
-        <div class="card-footer">
-          <div class="card-meta">
-            <span class="badge accent">40 Qs</span>
-            <span class="badge">Mixed Difficulty</span>
-            <span class="soon-tag">Coming Soon</span>
-          </div>
-          <div class="card-arrow">→</div>
-        </div>
-      </div>
-    </a>
-
+<!-- ══ TAB SWITCHER ══ -->
+<div class="switcher">
+  <div class="switcher-track" id="swTrack">
+    <div class="sw-pill" id="swPill"></div>
+    <button class="sw-btn mcq active" id="btn-mcq" onclick="switchTab('mcq')">
+      <span class="sw-dot"></span>📋 MCQ Quizzes
+    </button>
+    <button class="sw-btn code" id="btn-code" onclick="switchTab('code')">
+      <span class="sw-dot"></span>💻 Code &amp; Problems
+    </button>
   </div>
-
 </div>
 
+<!-- ══════════ MCQ PANEL ══════════ -->
+<div id="p-mcq" class="panel active">
+<div class="mcq-grid">
+  <a class="qcard" href="oops.html" style="--ac:var(--c0)">
+    <div class="qcard-top"></div><span class="qcard-num">01</span>
+    <div class="qcard-ico">🧱</div><div class="qcard-title">Object-Oriented Programming</div>
+    <div class="qcard-desc">Classes, objects, inheritance, encapsulation, polymorphism, abstraction, and dunder methods.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="oops.html">…</span><span class="pill">Beginner → Hard</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard" href="collections.html" style="--ac:var(--c1)">
+    <div class="qcard-top"></div><span class="qcard-num">02</span>
+    <div class="qcard-ico">📦</div><div class="qcard-title">Collections</div>
+    <div class="qcard-desc">Lists, tuples, sets, dicts, comprehensions, slicing, built-in methods, and memory behaviour.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="collections.html">…</span><span class="pill">Easy → Medium</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard" href="libraries.html" style="--ac:var(--c2)">
+    <div class="qcard-top"></div><span class="qcard-num">03</span>
+    <div class="qcard-ico">📚</div><div class="qcard-title">Libraries</div>
+    <div class="qcard-desc">NumPy, Pandas, Matplotlib, Seaborn, Plotly, and scipy — the data science stack.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="libraries.html">…</span><span class="pill">Easy → Medium</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard" href="database.html" style="--ac:var(--c3)">
+    <div class="qcard-top"></div><span class="qcard-num">04</span>
+    <div class="qcard-ico">🗄️</div><div class="qcard-title">Database</div>
+    <div class="qcard-desc">SQLite with Python, CRUD operations, parameterized queries, aggregation, and transactions.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="database.html">…</span><span class="pill">Intermediate</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard" href="loops_syntax.html" style="--ac:var(--c4)">
+    <div class="qcard-top"></div><span class="qcard-num">05</span>
+    <div class="qcard-ico">🔁</div><div class="qcard-title">Loops &amp; Syntax</div>
+    <div class="qcard-desc">for/while, break/continue/else, comprehensions, operator precedence, and Python gotchas.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="loops_syntax.html">…</span><span class="pill">Beginner → Medium</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard" href="exceptions.html" style="--ac:var(--c6)">
+    <div class="qcard-top"></div><span class="qcard-num">06</span>
+    <div class="qcard-ico">🛡️</div><div class="qcard-title">Exception Handling</div>
+    <div class="qcard-desc">try/except/else/finally, raising exceptions, custom exceptions, and defensive coding.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="exceptions.html">…</span><span class="pill">Beginner → Hard</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard" href="snippets.html" style="--ac:var(--c7)">
+    <div class="qcard-top"></div><span class="qcard-num">07</span>
+    <div class="qcard-ico">🧩</div><div class="qcard-title">Snippets</div>
+    <div class="qcard-desc">Read and predict the output of real code snippets — OOP, loops, libraries, edge cases.</div>
+    <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="snippets.html">…</span><span class="pill">All Levels</span></div><div class="qarrow">→</div></div>
+  </a>
+  <a class="qcard featured soon" href="mock.html" style="--ac:var(--c5)">
+    <div class="qcard-top"></div>
+    <div class="qcard-ico" style="width:52px;height:52px;font-size:1.7rem;flex-shrink:0;">🏆</div>
+    <div class="qcard-body">
+      <span style="font-family:'Mono',monospace;font-size:.64rem;color:var(--muted);">08</span>
+      <div class="qcard-title">Full Mock Test</div>
+      <div class="qcard-desc">All topics combined — timed, scored, analysed like a real exam.</div>
+      <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi">40 Qs</span><span class="pill">Mixed</span><span class="soon-lbl">Coming Soon</span></div><div class="qarrow">→</div></div>
+    </div>
+  </a>
+</div>
+</div>
+
+<!-- ══════════ CODE PANEL ══════════ -->
+<div id="p-code" class="panel">
+
+  <!-- PROBLEM STATEMENTS -->
+  <div class="sec">🎯 Problem Statements — Click to Expand</div>
+  <div class="ps-wrap">
+
+    <!-- ── PS 1: Employee ── -->
+    <div class="ps-accordion" style="--pa:#38bdf8" id="ps0">
+      <button type="button" class="ps-trigger" onclick="togglePS('ps0')">
+        <div class="ps-trigger-ico">👔</div>
+        <div class="ps-trigger-info">
+          <div class="ps-trigger-title">Employee Management System</div>
+          <div class="ps-trigger-sub">MySQL · OOP · Aggregation · Composition · NumPy · Matplotlib · Exceptions</div>
+        </div>
+        <div class="ps-trigger-chev">▼</div>
+      </button>
+      <div class="ps-content">
+        <div class="ps-inner">
+          <div class="ps-divider"></div>
+
+          <div class="ps-blurb">Build a <strong>full-stack employee management system</strong> modelling real company structure — departments, employees, payroll — using MySQL persistence, OOP relationships, and NumPy / Matplotlib for data analysis.</div>
+
+          <!-- 1. Classes -->
+          <div class="ps-group">🧱 1 · Classes</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">👔</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">StaffMember</span><span class="req-name">Abstract base class</span></div>
+                <div class="req-desc">Abstract base using <code>ABC</code>. Defines the <code>role()</code> contract all staff must implement. Never instantiated directly.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🧑‍💼</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Employee</span><span class="req-name">Core staff entity</span></div>
+                <div class="req-desc">Holds <code>emp_id</code>, <code>name</code>, private <code>__salary</code>. Extends <code>StaffMember</code>. Implements <code>role()</code> returning <code>"Employee"</code>.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🏢</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Manager</span><span class="req-name">Extends Employee</span></div>
+                <div class="req-desc">Adds a <code>team</code> list. Overrides <code>role()</code> to return <code>"Manager"</code>. Uses <code>super().__init__</code> to reuse Employee setup.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🏗️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Department</span><span class="req-name">Owns its employees</span></div>
+                <div class="req-desc">Holds <code>name</code> and an internal <code>employees</code> list. Employees are created and stored here — they have no life outside this class.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🏦</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Company</span><span class="req-name">References departments</span></div>
+                <div class="req-desc">Receives already-created <code>Department</code> objects. Provides <code>all_salaries()</code> to flatten and return all employee salaries as a NumPy array.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">💰</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Payroll</span><span class="req-name">Association class</span></div>
+                <div class="req-desc">Stores only <code>emp_id</code> (int), <code>month</code>, <code>gross</code>, <code>deduction</code>, <code>net</code>. No object reference to Employee — linked by ID like a DB foreign key.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 2. Methods -->
+          <div class="ps-group">⚙️ 2 · Methods</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🔑</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">@property salary</span><span class="req-name">Employee · getter + setter</span></div>
+                <div class="req-desc">Getter returns <code>__salary</code>. Setter validates: if value &lt; 0, raises <code>SalaryValidationError</code>. Enforces the rule on every write.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔄</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">role()</span><span class="req-name">Employee &amp; Manager · polymorphic</span></div>
+                <div class="req-desc">Each subclass implements its own version. Calling <code>role()</code> on a mixed list dispatches the right one automatically — no <code>isinstance</code> needed.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📋</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">add_employee()</span><span class="req-name">Department · list manager</span></div>
+                <div class="req-desc">Appends an <code>Employee</code> object to the internal list. Since <code>Department</code> owns these, no outside code should hold a separate reference.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📊</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">all_salaries()</span><span class="req-name">Company · data extractor</span></div>
+                <div class="req-desc">Returns <code>np.array([e.salary for d in self.depts for e in d.employees])</code> — a flat NumPy array ready for statistical analysis.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">💾</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">add_employee() DB</span><span class="req-name">Standalone · MySQL insert</span></div>
+                <div class="req-desc">Connects, runs parameterized <code>INSERT INTO employees</code>, commits, and closes in <code>finally</code>. Wraps errors with exception chaining.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 3. OOP Concepts -->
+          <div class="ps-group">🔮 3 · OOP Concepts &amp; How to Implement</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🔗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Composition</span><span class="req-name">Department owns Employees</span></div>
+                <div class="req-desc"><code>Department</code> creates <code>Employee</code> objects inside its own <code>__init__</code>. No external reference holds them — delete the department and its employees are gone too.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📎</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Aggregation</span><span class="req-name">Company references Departments</span></div>
+                <div class="req-desc"><code>Company</code> receives already-created <code>Department</code> objects as arguments — it does not create them. Departments survive independently if the Company is deleted.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">↔️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Association</span><span class="req-name">Payroll links by ID only</span></div>
+                <div class="req-desc"><code>Payroll</code> stores <code>emp_id</code> as a plain integer — no object pointer. Both exist fully independently. The link is resolved at query time, exactly like a database foreign key.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔐</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Encapsulation</span><span class="req-name">Private salary with @property guard</span></div>
+                <div class="req-desc">Store salary as private <code>__salary</code>. Expose via <code>@property</code> with a setter that raises <code>SalaryValidationError</code> for negative values. Outside code can never bypass this.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔄</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Inheritance &amp; Polymorphism</span><span class="req-name">Manager extends Employee</span></div>
+                <div class="req-desc">Abstract base <code>StaffMember</code> defines <code>role()</code>. <code>Employee</code> and <code>Manager(Employee)</code> each implement it. Loop a mixed list — Python dispatches the correct version with no <code>isinstance</code> needed.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 4. Database -->
+          <div class="ps-group">🗄️ 4 · Database</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🐬</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Schema</span><span class="req-name">3-table relational design</span></div>
+                <div class="req-desc">Tables: <code>departments(dept_id, name)</code> · <code>employees(emp_id, name, dept_id FK, salary, join_date)</code> · <code>payroll(pay_id, emp_id FK, month, gross, deduction, net)</code>.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🛡️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Parameterized Queries</span><span class="req-name">Always use %s placeholders</span></div>
+                <div class="req-desc">Never use f-strings in SQL — always pass values as a tuple: <code>cursor.execute("INSERT INTO employees VALUES(%s,%s,%s)", (name, dept_id, salary))</code>. Prevents SQL injection.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔁</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">CRUD Operations</span><span class="req-name">Insert, fetch, update</span></div>
+                <div class="req-desc">Use <code>cursor.execute()</code> + <code>conn.commit()</code> for writes. Use <code>cursor(dictionary=True)</code> for dict-style rows on reads. Join tables to fetch employee-department reports.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 5. NumPy / Pandas / Matplotlib -->
+          <div class="ps-group">📈 5 · NumPy &amp; Matplotlib — Methods &amp; Why</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🔢</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">np.mean · np.std · np.percentile</span><span class="req-name">Salary statistics</span></div>
+                <div class="req-desc"><strong>Why:</strong> Understand pay distribution across departments. Load salaries as <code>np.array</code>, compute <code>np.mean</code>, <code>np.std</code>, <code>np.percentile([25,75])</code> for IQR.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🎯</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">np.abs · z-score masking</span><span class="req-name">Outlier detection</span></div>
+                <div class="req-desc"><strong>Why:</strong> Flag abnormally high/low salaries. <code>z = (arr - mean)/std</code>, then extract with <code>arr[np.abs(z) &gt; 2]</code> — boolean mask, no loop needed.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📊</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">plt.subplots · bar · hist · pie</span><span class="req-name">3-panel salary dashboard</span></div>
+                <div class="req-desc"><strong>Why:</strong> Visualise salary data across three angles. <code>plt.subplots(1,3,figsize=(14,4))</code> — Panel 1: avg salary bar, Panel 2: histogram with ±σ lines, Panel 3: headcount pie. End with <code>plt.tight_layout()</code>.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 6. Exception Handling -->
+          <div class="ps-group">🛡️ 6 · Exception Handling</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">❗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Custom Exceptions</span><span class="req-name">EmployeeNotFoundError · SalaryValidationError</span></div>
+                <div class="req-desc">Define both as subclasses of <code>Exception</code>. Raise <code>SalaryValidationError</code> in the salary setter for negative values. Raise <code>EmployeeNotFoundError</code> when a DB lookup returns nothing.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Exception Chaining</span><span class="req-name">raise NewError() from e</span></div>
+                <div class="req-desc">Wrap <code>mysql.connector.Error</code> with your domain error: <code>raise EmployeeNotFoundError("Insert failed") from e</code>. The original DB error is preserved as <code>__cause__</code> for debugging.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🧹</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">try / except / finally</span><span class="req-name">Guaranteed cleanup</span></div>
+                <div class="req-desc">Always place <code>conn.close()</code> in a <code>finally</code> block — it runs whether the query succeeds or fails. Never rely on garbage collection to close DB connections.</div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="ps-actions">
+            <div class="ps-tag-row">
+              <span class="ps-tag">OOP</span><span class="ps-tag">Composition</span><span class="ps-tag">Aggregation</span><span class="ps-tag">MySQL</span><span class="ps-tag">NumPy</span><span class="ps-tag">Matplotlib</span><span class="ps-tag">Exceptions</span>
+            </div>
+          </div>
+          <div class="ps-actions" style="margin-top:10px;">
+            <button type="button" class="ps-btn btn-hint" onclick="toggleHint('h0')">💡 Show Hints</button>
+            <button type="button" class="ps-btn btn-sol" onclick="confirmSolution('sol0')">🔓 View Solution</button>
+          </div>
+          <div class="ps-hint-panel" id="h0">
+            <div class="hint-grid">
+              <div class="hint-item"><div class="hint-topic">OOP · Composition</div><div class="hint-text">Use <code>self.employees = []</code> inside <code>Department.__init__</code>. Department creates and owns Employee objects — delete department, employees gone.</div></div>
+              <div class="hint-item"><div class="hint-topic">OOP · Aggregation</div><div class="hint-text">Pass <code>Department</code> objects into <code>Company</code> as arguments. Company references them but doesn't create them — departments exist independently.</div></div>
+              <div class="hint-item"><div class="hint-topic">OOP · Association</div><div class="hint-text"><code>Payroll</code> stores only <code>emp_id</code> — no object reference. They're associated but fully independent. Resolve the link via DB query.</div></div>
+              <div class="hint-item"><div class="hint-topic">MySQL · Connect</div><div class="hint-text"><code>mysql.connector.connect(host="localhost", user="root", password="", database="empdb")</code>. Use <code>cursor(dictionary=True)</code> for dict-style rows.</div></div>
+              <div class="hint-item"><div class="hint-topic">MySQL · %s param</div><div class="hint-text"><code>cursor.execute("INSERT INTO employees VALUES(%s,%s,%s)", (name, dept_id, salary))</code>. Never use f-strings with SQL.</div></div>
+              <div class="hint-item"><div class="hint-topic">NumPy · Outliers</div><div class="hint-text"><code>z = (arr - np.mean(arr)) / np.std(arr)</code> then <code>arr[np.abs(z) &gt; 2]</code> — boolean mask extracts outlier values.</div></div>
+              <div class="hint-item"><div class="hint-topic">Matplotlib · Subplots</div><div class="hint-text"><code>fig, axes = plt.subplots(1, 3, figsize=(14, 4))</code>. Draw bar on <code>axes[0]</code>, hist on <code>axes[1]</code>, pie on <code>axes[2]</code>.</div></div>
+              <div class="hint-item"><div class="hint-topic">Exceptions · Chain</div><div class="hint-text"><code>except mysql.connector.Error as e: raise EmployeeNotFoundError("msg") from e</code> — original error preserved as <code>__cause__</code>.</div></div>
+            </div>
+          </div>
+          <div class="ps-sol-panel" id="sol0">
+            <div class="sol-inner">
+              <div class="sol-header"><span class="sol-title">🔓 Employee System — Solution Skeleton</span></div>
+              <pre class="sol-code"><span class="kw">import</span> mysql.connector
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">EmployeeNotFoundError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
+<span class="kw">class</span> <span class="fn">SalaryValidationError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">StaffMember</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">role</span>(<span class="nm">self</span>): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">Employee</span>(<span class="fn">StaffMember</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, emp_id, name, salary):
+        <span class="nm">self</span>.emp_id = emp_id; <span class="nm">self</span>.name = name; <span class="nm">self</span>.__salary = salary
+    <span class="kw">@property</span>
+    <span class="kw">def</span> <span class="fn">salary</span>(<span class="nm">self</span>): <span class="kw">return</span> <span class="nm">self</span>.__salary
+    <span class="kw">@salary</span>.setter
+    <span class="kw">def</span> <span class="fn">salary</span>(<span class="nm">self</span>, v):
+        <span class="kw">if</span> v &lt; <span class="nm">0</span>: <span class="kw">raise</span> <span class="fn">SalaryValidationError</span>(<span class="st">f"Invalid: {v}"</span>)
+        <span class="nm">self</span>.__salary = v
+    <span class="kw">def</span> <span class="fn">role</span>(<span class="nm">self</span>): <span class="kw">return</span> <span class="st">"Employee"</span>
+
+<span class="kw">class</span> <span class="fn">Manager</span>(<span class="fn">Employee</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, emp_id, name, salary, team=[]):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(emp_id, name, salary); <span class="nm">self</span>.team = team
+    <span class="kw">def</span> <span class="fn">role</span>(<span class="nm">self</span>): <span class="kw">return</span> <span class="st">"Manager"</span>
+
+<span class="kw">class</span> <span class="fn">Department</span>:  <span class="cm"># Composition — owns employees</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, name):
+        <span class="nm">self</span>.name = name; <span class="nm">self</span>.employees = []
+    <span class="kw">def</span> <span class="fn">add</span>(<span class="nm">self</span>, emp): <span class="nm">self</span>.employees.<span class="fn">append</span>(emp)
+
+<span class="kw">class</span> <span class="fn">Company</span>:  <span class="cm"># Aggregation — references depts</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, depts): <span class="nm">self</span>.depts = depts
+    <span class="kw">def</span> <span class="fn">all_salaries</span>(<span class="nm">self</span>):
+        <span class="kw">return</span> np.<span class="fn">array</span>([e.salary <span class="kw">for</span> d <span class="kw">in</span> <span class="nm">self</span>.depts <span class="kw">for</span> e <span class="kw">in</span> d.employees])
+
+<span class="kw">def</span> <span class="fn">add_employee</span>(name, dept_id, salary):
+    conn = mysql.connector.<span class="fn">connect</span>(host=<span class="st">"localhost"</span>,user=<span class="st">"root"</span>,password=<span class="st">""</span>,database=<span class="st">"empdb"</span>)
+    <span class="kw">try</span>:
+        cur = conn.<span class="fn">cursor</span>()
+        cur.<span class="fn">execute</span>(<span class="st">"INSERT INTO employees(name,dept_id,salary) VALUES(%s,%s,%s)"</span>,(name,dept_id,salary))
+        conn.<span class="fn">commit</span>()
+    <span class="kw">except</span> mysql.connector.Error <span class="kw">as</span> e:
+        <span class="kw">raise</span> <span class="fn">EmployeeNotFoundError</span>(<span class="st">"Insert failed"</span>) <span class="kw">from</span> e
+    <span class="kw">finally</span>: conn.<span class="fn">close</span>()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PS 2: Student ── -->
+    <div class="ps-accordion" style="--pa:#00e5a0" id="ps1">
+      <button type="button" class="ps-trigger" onclick="togglePS('ps1')">
+        <div class="ps-trigger-ico">🎓</div>
+        <div class="ps-trigger-info">
+          <div class="ps-trigger-title">Student Grade Tracker</div>
+          <div class="ps-trigger-sub">MySQL · OOP · Association · NumPy · Pandas · Exceptions</div>
+        </div>
+        <div class="ps-trigger-chev">▼</div>
+      </button>
+      <div class="ps-content">
+        <div class="ps-inner">
+          <div class="ps-divider"></div>
+
+          <div class="ps-blurb">Build a <strong>student performance tracking system</strong> managing students, subjects, and multi-exam marks — with MySQL storage, OOP relationship patterns, and statistical analysis using NumPy and Pandas.</div>
+
+          <!-- 1. Classes -->
+          <div class="ps-group">🧱 1 · Classes</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🎓</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Student</span><span class="req-name">Core entity</span></div>
+                <div class="req-desc">Holds <code>sid</code>, <code>name</code>, and a private <code>__marks</code> list. Exposes <code>@property gpa</code> and a <code>@classmethod letter_grade(score)</code>. No direct knowledge of subjects.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📚</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Subject</span><span class="req-name">Independent entity</span></div>
+                <div class="req-desc">Holds <code>subid</code>, <code>name</code>, <code>credits</code>. Completely independent of <code>Student</code> — neither class owns the other.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">↔️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Mark</span><span class="req-name">Association / link class</span></div>
+                <div class="req-desc">Links <code>Student</code> and <code>Subject</code> by ID: <code>Mark(student_id, subject_id, score)</code>. Raises <code>InvalidGradeError</code> if <code>score</code> is outside 0–100.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📋</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">GradeBook</span><span class="req-name">Aggregation container</span></div>
+                <div class="req-desc">Accepts and stores <code>Student</code> objects passed in from outside. Provides <code>rank()</code> to return students sorted by GPA using <code>np.argsort</code>.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 2. Methods -->
+          <div class="ps-group">⚙️ 2 · Methods</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">📐</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">@property gpa</span><span class="req-name">Student · computed attribute</span></div>
+                <div class="req-desc">Returns <code>np.mean([m.score for m in self.__marks])</code> if marks exist, else <code>0</code>. Read-only — no setter. Computed fresh on each access.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔤</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">@classmethod letter_grade(score)</span><span class="req-name">Student · class-level utility</span></div>
+                <div class="req-desc">Returns A/B/C/D/F based on score ranges. Callable as <code>Student.letter_grade(88)</code> — no instance needed. Reusable across the whole program.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📥</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">add_mark(mark)</span><span class="req-name">Student · encapsulated append</span></div>
+                <div class="req-desc">Appends a validated <code>Mark</code> object to private <code>__marks</code>. Outside code cannot access the list directly — only through this method.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🏆</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">rank()</span><span class="req-name">GradeBook · sorted leaderboard</span></div>
+                <div class="req-desc">Builds a GPA array with <code>np.array([s.gpa ...])</code>, sorts with <code>np.argsort(gpas)[::-1]</code>, and returns students in descending rank order.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">💾</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">load_marks()</span><span class="req-name">Standalone · DB loader</span></div>
+                <div class="req-desc">Connects to MySQL, runs a 3-table JOIN, loads results directly into a Pandas DataFrame via <code>pd.read_sql()</code>, and closes the connection in <code>finally</code>.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 3. OOP Concepts -->
+          <div class="ps-group">🔮 3 · OOP Concepts &amp; How to Implement</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">↔️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Association</span><span class="req-name">Mark links Student ↔ Subject</span></div>
+                <div class="req-desc"><code>Student</code> and <code>Subject</code> are completely independent. Create a separate <code>Mark(student_id, subject_id, score)</code> that links them by ID — neither side owns the other. Many-to-many relationship.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📎</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Aggregation</span><span class="req-name">GradeBook holds but doesn't own Students</span></div>
+                <div class="req-desc"><code>GradeBook</code> accepts <code>Student</code> objects passed in from outside — not created by it. Students survive if GradeBook is deleted. They can be used elsewhere too.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔐</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Encapsulation</span><span class="req-name">Private marks, computed GPA</span></div>
+                <div class="req-desc">Store marks in private <code>__marks</code>. Expose <code>@property gpa</code> computed as the mean. Add <code>@classmethod letter_grade(score)</code> returning A/B/C/D/F — callable as <code>Student.letter_grade(88)</code>.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 4. Database -->
+          <div class="ps-group">🗄️ 4 · Database</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🐬</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Schema</span><span class="req-name">3-table design with FK joins</span></div>
+                <div class="req-desc">Tables: <code>students(id, name, email)</code> · <code>subjects(id, name, credits)</code> · <code>marks(id, student_id FK, subject_id FK, exam, score)</code>. The marks table is the association table mirroring the <code>Mark</code> class.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">JOIN Query</span><span class="req-name">Transcript fetch</span></div>
+                <div class="req-desc"><code>SELECT s.name, sub.name, m.score FROM marks m JOIN students s ON m.student_id=s.id JOIN subjects sub ON m.subject_id=sub.id</code> — load directly into Pandas with <code>pd.read_sql()</code>.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🛡️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Parameterized Inserts</span><span class="req-name">Safe writes</span></div>
+                <div class="req-desc">Always use <code>%s</code> — never f-strings. Example: <code>cursor.execute("INSERT INTO marks VALUES(%s,%s,%s,%s,%s)", (id, sid, subid, exam, score))</code>. Call <code>conn.commit()</code> after writes.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 5. NumPy / Pandas -->
+          <div class="ps-group">📈 5 · NumPy &amp; Pandas — Methods &amp; Why</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🔢</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">np.mean · np.std · np.argsort</span><span class="req-name">Ranking &amp; z-scores</span></div>
+                <div class="req-desc"><strong>Why:</strong> Compare students fairly. Z-score totals with <code>np.mean</code> and <code>np.std</code>. Rank with <code>np.argsort(totals)[::-1]</code> — indices sorted descending, no manual sort needed.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">✅</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">np.where</span><span class="req-name">Element-wise pass/fail labels</span></div>
+                <div class="req-desc"><strong>Why:</strong> Label every score at once without a loop. <code>np.where(scores &gt;= 40, "Pass", "Fail")</code> returns a string array mapping each score to its result instantly.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🐼</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">pd.groupby · .agg()</span><span class="req-name">Subject-level statistics</span></div>
+                <div class="req-desc"><strong>Why:</strong> Summarise performance per subject. <code>groupby("subject").agg({"score":["mean","max","min","count"]})</code> gives a full breakdown in one call.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📊</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">pd.pivot_table</span><span class="req-name">Student × Subject grid</span></div>
+                <div class="req-desc"><strong>Why:</strong> Create a readable score matrix. <code>pd.pivot_table(df, values="score", index="student", columns="subject", aggfunc="mean")</code> — rows = students, columns = subjects.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 6. Exception Handling -->
+          <div class="ps-group">🛡️ 6 · Exception Handling</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">❗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Custom Exceptions</span><span class="req-name">InvalidGradeError · StudentNotFoundError</span></div>
+                <div class="req-desc">Both extend <code>Exception</code>. Raise <code>InvalidGradeError</code> inside <code>Mark.__init__</code> when <code>not 0 &lt;= score &lt;= 100</code>. Raise <code>StudentNotFoundError</code> when a DB lookup returns no rows.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🧹</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">try / except / finally</span><span class="req-name">DB safety guarantee</span></div>
+                <div class="req-desc">Wrap all MySQL calls in <code>try/except mysql.connector.Error</code>. Always place <code>conn.close()</code> in <code>finally</code> — runs even if an exception is raised mid-query.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔍</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Validate-before-write</span><span class="req-name">Guard at the boundary</span></div>
+                <div class="req-desc">Check score range in the <code>Mark</code> constructor — before the object is even created. This means invalid data never reaches the database, regardless of how many DB functions exist.</div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="ps-actions">
+            <div class="ps-tag-row">
+              <span class="ps-tag">Association</span><span class="ps-tag">Aggregation</span><span class="ps-tag">MySQL</span><span class="ps-tag">NumPy</span><span class="ps-tag">Pandas</span><span class="ps-tag">Exceptions</span>
+            </div>
+          </div>
+          <div class="ps-actions" style="margin-top:10px;">
+            <button type="button" class="ps-btn btn-hint" onclick="toggleHint('h1')">💡 Show Hints</button>
+            <button type="button" class="ps-btn btn-sol" onclick="confirmSolution('sol1')">🔓 View Solution</button>
+          </div>
+          <div class="ps-hint-panel" id="h1">
+            <div class="hint-grid">
+              <div class="hint-item"><div class="hint-topic">OOP · Association</div><div class="hint-text">Don't put marks inside Student or Subject. Create <code>class Mark: def __init__(self, student_id, subject_id, score)</code> — links them by ID only.</div></div>
+              <div class="hint-item"><div class="hint-topic">OOP · Aggregation</div><div class="hint-text"><code>class GradeBook: def __init__(self): self.students = []</code>. Students passed in via <code>add_student()</code> — not created inside GradeBook.</div></div>
+              <div class="hint-item"><div class="hint-topic">OOP · @classmethod</div><div class="hint-text"><code>@classmethod def letter_grade(cls, score): return "A" if score >= 90 else "B" ...</code> — callable as <code>Student.letter_grade(88)</code>.</div></div>
+              <div class="hint-item"><div class="hint-topic">MySQL · JOIN</div><div class="hint-text"><code>SELECT s.name, sub.name, m.score FROM marks m JOIN students s ON m.student_id=s.id JOIN subjects sub ON m.subject_id=sub.id</code></div></div>
+              <div class="hint-item"><div class="hint-topic">NumPy · np.where</div><div class="hint-text"><code>np.where(scores >= 40, "Pass", "Fail")</code> — element-wise conditional, no loop needed.</div></div>
+              <div class="hint-item"><div class="hint-topic">NumPy · np.argsort</div><div class="hint-text"><code>ranks = np.argsort(totals)[::-1]</code> — indices sorted descending. Use to print students in rank order.</div></div>
+              <div class="hint-item"><div class="hint-topic">Pandas · pivot_table</div><div class="hint-text"><code>pd.pivot_table(df, values="score", index="student", columns="subject", aggfunc="mean")</code></div></div>
+              <div class="hint-item"><div class="hint-topic">Exceptions</div><div class="hint-text"><code>if not 0 <= score <= 100: raise InvalidGradeError(f"Score {score} out of range")</code> — validate before insert.</div></div>
+            </div>
+          </div>
+          <div class="ps-sol-panel" id="sol1">
+            <div class="sol-inner">
+              <div class="sol-header"><span class="sol-title">🔓 Grade Tracker — Solution Skeleton</span></div>
+              <pre class="sol-code"><span class="kw">import</span> mysql.connector
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="kw">class</span> <span class="fn">InvalidGradeError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
+<span class="kw">class</span> <span class="fn">StudentNotFoundError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">Mark</span>:  <span class="cm"># Association class</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, student_id, subject_id, score):
+        <span class="kw">if not</span> <span class="nm">0</span> &lt;= score &lt;= <span class="nm">100</span>: <span class="kw">raise</span> <span class="fn">InvalidGradeError</span>(<span class="st">f"Bad: {score}"</span>)
+        <span class="nm">self</span>.student_id = student_id; <span class="nm">self</span>.subject_id = subject_id; <span class="nm">self</span>.score = score
+
+<span class="kw">class</span> <span class="fn">Student</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, sid, name):
+        <span class="nm">self</span>.sid = sid; <span class="nm">self</span>.name = name; <span class="nm">self</span>.__marks = []
+    <span class="kw">def</span> <span class="fn">add_mark</span>(<span class="nm">self</span>, m): <span class="nm">self</span>.__marks.<span class="fn">append</span>(m)
+    <span class="kw">@property</span>
+    <span class="kw">def</span> <span class="fn">gpa</span>(<span class="nm">self</span>):
+        <span class="kw">return</span> np.<span class="fn">mean</span>([m.score <span class="kw">for</span> m <span class="kw">in</span> <span class="nm">self</span>.__marks]) <span class="kw">if</span> <span class="nm">self</span>.__marks <span class="kw">else</span> <span class="nm">0</span>
+    <span class="kw">@classmethod</span>
+    <span class="kw">def</span> <span class="fn">letter_grade</span>(cls, score):
+        <span class="kw">return</span> <span class="st">"A"</span> <span class="kw">if</span> score&gt;=<span class="nm">90</span> <span class="kw">else</span> <span class="st">"B"</span> <span class="kw">if</span> score&gt;=<span class="nm">75</span> <span class="kw">else</span> <span class="st">"C"</span> <span class="kw">if</span> score&gt;=<span class="nm">60</span> <span class="kw">else</span> <span class="st">"D"</span> <span class="kw">if</span> score&gt;=<span class="nm">40</span> <span class="kw">else</span> <span class="st">"F"</span>
+
+<span class="kw">class</span> <span class="fn">GradeBook</span>:  <span class="cm"># Aggregation</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>): <span class="nm">self</span>.students = []
+    <span class="kw">def</span> <span class="fn">add</span>(<span class="nm">self</span>, s): <span class="nm">self</span>.students.<span class="fn">append</span>(s)
+    <span class="kw">def</span> <span class="fn">rank</span>(<span class="nm">self</span>):
+        gpas = np.<span class="fn">array</span>([s.gpa <span class="kw">for</span> s <span class="kw">in</span> <span class="nm">self</span>.students])
+        <span class="kw">return</span> [<span class="nm">self</span>.students[i] <span class="kw">for</span> i <span class="kw">in</span> np.<span class="fn">argsort</span>(gpas)[::<span class="nm">-1</span>]]
+
+<span class="kw">def</span> <span class="fn">load_marks</span>():
+    conn = mysql.connector.<span class="fn">connect</span>(host=<span class="st">"localhost"</span>,user=<span class="st">"root"</span>,password=<span class="st">""</span>,database=<span class="st">"gradedb"</span>)
+    <span class="kw">try</span>:
+        <span class="kw">return</span> pd.<span class="fn">read_sql</span>(<span class="st">"SELECT s.name student, sub.name subject, m.score FROM marks m JOIN students s ON m.student_id=s.id JOIN subjects sub ON m.subject_id=sub.id"</span>, conn)
+    <span class="kw">finally</span>: conn.<span class="fn">close</span>()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PS 3: Library ── -->
+    <div class="ps-accordion" style="--pa:#a78bfa" id="ps2">
+      <button type="button" class="ps-trigger" onclick="togglePS('ps2')">
+        <div class="ps-trigger-ico">📖</div>
+        <div class="ps-trigger-info">
+          <div class="ps-trigger-title">Library Management System</div>
+          <div class="ps-trigger-sub">MySQL · OOP · Composition · Polymorphism · Pandas · NumPy · Exceptions</div>
+        </div>
+        <div class="ps-trigger-chev">▼</div>
+      </button>
+      <div class="ps-content">
+        <div class="ps-inner">
+          <div class="ps-divider"></div>
+
+          <div class="ps-blurb">Build a <strong>digital library system</strong> managing books, members, and borrow history — with MySQL persistence, rich OOP structure, and Pandas / NumPy for usage analytics and availability insights.</div>
+
+          <!-- 1. Classes -->
+          <div class="ps-group">🧱 1 · Classes</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">📖</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">LibraryItem</span><span class="req-name">Abstract base class</span></div>
+                <div class="req-desc">Extends <code>ABC</code>. Declares <code>@abstractmethod availability_status()</code>. Cannot be instantiated directly — enforces a common interface for all item types.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Book</span><span class="req-name">Extends LibraryItem</span></div>
+                <div class="req-desc">Holds <code>isbn</code>, <code>title</code>, <code>available</code>, <code>total</code>. Implements <code>availability_status()</code> returning copy count string.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📰</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Magazine</span><span class="req-name">Extends LibraryItem</span></div>
+                <div class="req-desc">Holds <code>title</code>, <code>issue</code>. Implements <code>availability_status()</code> returning current issue info. Same interface, different behaviour from <code>Book</code>.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🗂️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Catalog</span><span class="req-name">Book registry (owned by Library)</span></div>
+                <div class="req-desc">Stores a <code>books</code> dict keyed by ISBN. Provides <code>add(book)</code> and <code>get(isbn)</code>. Raises <code>BookNotFoundError</code> if ISBN is missing.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🏛️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Library</span><span class="req-name">Composition root</span></div>
+                <div class="req-desc">Creates and owns <code>Catalog()</code> and <code>BorrowDesk()</code> inside <code>__init__</code>. Deleting a Library destroys both components — they have no life outside it.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🧾</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">BorrowRecord</span><span class="req-name">Association class</span></div>
+                <div class="req-desc">Holds <code>member_id</code>, <code>isbn</code>, <code>borrowed_on</code>, <code>returned_on</code> — links Member and Book by ID only, no object pointers. Mirrors the DB <code>borrow_history</code> table.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 2. Methods -->
+          <div class="ps-group">⚙️ 2 · Methods</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">✅</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">availability_status()</span><span class="req-name">Book &amp; Magazine · polymorphic</span></div>
+                <div class="req-desc">Each subclass returns a different string. When called on a mixed list, Python dispatches the right version automatically — no <code>isinstance</code> checks needed anywhere.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📥</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">add(book) / get(isbn)</span><span class="req-name">Catalog · registry methods</span></div>
+                <div class="req-desc"><code>add</code> stores the book by ISBN key. <code>get</code> retrieves it — raises <code>BookNotFoundError</code> if missing rather than returning <code>None</code>. Fail loudly, not silently.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📤</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">borrow_book(conn, member_id, isbn)</span><span class="req-name">Standalone · atomic transaction</span></div>
+                <div class="req-desc">Sets <code>conn.autocommit=False</code>, checks availability, decrements <code>available</code>, inserts a borrow record, then <code>commit()</code>. On any failure: <code>rollback()</code> then re-raise.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 3. OOP Concepts -->
+          <div class="ps-group">🔮 3 · OOP Concepts &amp; How to Implement</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🔗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Composition</span><span class="req-name">Library owns Catalog and BorrowDesk</span></div>
+                <div class="req-desc"><code>Library.__init__</code> creates <code>Catalog()</code> and <code>BorrowDesk()</code> internally. No external reference exists to either — delete Library and both are gone. They have no existence outside it.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">↔️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Association</span><span class="req-name">BorrowRecord links Member ↔ Book by ID</span></div>
+                <div class="req-desc"><code>BorrowRecord(member_id, isbn, borrowed_on, returned_on)</code> links Member and Book by ID only — no object pointers. Both sides are fully independent and can be queried or modified separately.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔮</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Abstraction &amp; Polymorphism</span><span class="req-name">LibraryItem with different availability logic</span></div>
+                <div class="req-desc">Abstract class <code>LibraryItem</code> defines <code>availability_status()</code>. <code>Book</code> returns available copy count; <code>Magazine</code> returns current issue info. Loop a mixed list — correct method dispatched per type automatically.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 4. Database -->
+          <div class="ps-group">🗄️ 4 · Database</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🐬</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Schema</span><span class="req-name">3-table design</span></div>
+                <div class="req-desc">Tables: <code>books(isbn, title, genre, total_copies, available)</code> · <code>members(id, name, email)</code> · <code>borrow_history(id, member_id FK, isbn FK, borrowed_on, returned_on)</code>.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔁</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Atomic Borrow Transaction</span><span class="req-name">All-or-nothing write</span></div>
+                <div class="req-desc">Set <code>conn.autocommit=False</code>. Decrement available + insert borrow record as a single atomic unit. On any error: <code>conn.rollback()</code>. On success: <code>conn.commit()</code>. Prevents partial writes.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🛡️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Parameterized Queries</span><span class="req-name">Always %s placeholders</span></div>
+                <div class="req-desc">Never concatenate user input into SQL. Use <code>cursor.execute("UPDATE books SET available=available-1 WHERE isbn=%s", (isbn,))</code> — the trailing comma makes it a tuple.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 5. NumPy / Pandas -->
+          <div class="ps-group">📈 5 · NumPy &amp; Pandas — Methods &amp; Why</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">🐼</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">pd.groupby · .size()</span><span class="req-name">Most borrowed books</span></div>
+                <div class="req-desc"><strong>Why:</strong> Identify popular titles. Load <code>borrow_history</code> JOIN into DataFrame. <code>groupby("isbn").size().sort_values(ascending=False)</code> gives a ranked borrow count instantly.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">⏰</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">pd.Timestamp · .dt.days · .isna()</span><span class="req-name">Overdue detection</span></div>
+                <div class="req-desc"><strong>Why:</strong> Find unreturned books past 14 days. <code>df[(df["returned_on"].isna()) &amp; ((pd.Timestamp.now()-df["borrowed_on"]).dt.days &gt; 14)]</code> — chain boolean masks.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🔢</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">np.divide · np.argmin</span><span class="req-name">Genre availability rates</span></div>
+                <div class="req-desc"><strong>Why:</strong> Find most understocked genres safely. <code>np.divide(avail, total, out=np.zeros_like(avail), where=total!=0)</code> avoids ZeroDivisionError. <code>np.argmin(rates)</code> finds the worst.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">📊</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">np.histogram</span><span class="req-name">Borrow duration distribution</span></div>
+                <div class="req-desc"><strong>Why:</strong> Understand how long members keep books. <code>np.histogram(durations, bins=10)</code> returns bin counts and edges — use with Matplotlib to plot a frequency chart.</div>
+              </div>
+            </li>
+          </ul>
+
+          <!-- 6. Exception Handling -->
+          <div class="ps-group">🛡️ 6 · Exception Handling</div>
+          <ul class="ps-reqs">
+            <li class="ps-req">
+              <div class="req-ico">❗</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Custom Exceptions</span><span class="req-name">BookNotAvailableError · MaxBorrowLimitError · BookNotFoundError</span></div>
+                <div class="req-desc">All extend <code>Exception</code>. Raise <code>BookNotAvailableError</code> when <code>available == 0</code>. Raise <code>MaxBorrowLimitError</code> when active borrows ≥ 3. Raise <code>BookNotFoundError</code> when ISBN lookup fails.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">↩️</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">Rollback on Error</span><span class="req-name">Transaction safety</span></div>
+                <div class="req-desc">Wrap the borrow transaction in <code>try/except</code>. On any exception inside — domain or DB — call <code>conn.rollback()</code> before re-raising. The DB stays consistent even if the app crashes mid-write.</div>
+              </div>
+            </li>
+            <li class="ps-req">
+              <div class="req-ico">🧹</div>
+              <div class="req-main">
+                <div class="req-head"><span class="req-cat">finally · conn.close()</span><span class="req-name">Guaranteed cleanup</span></div>
+                <div class="req-desc">Always place <code>conn.close()</code> in a <code>finally</code> block. Runs after <code>commit</code>, after <code>rollback</code>, after any exception. Prevents connection leaks under all conditions.</div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="ps-actions">
+            <div class="ps-tag-row">
+              <span class="ps-tag">Composition</span><span class="ps-tag">Association</span><span class="ps-tag">Polymorphism</span><span class="ps-tag">MySQL</span><span class="ps-tag">Pandas</span><span class="ps-tag">NumPy</span><span class="ps-tag">Exceptions</span>
+            </div>
+          </div>
+          <div class="ps-actions" style="margin-top:10px;">
+            <button type="button" class="ps-btn btn-hint" onclick="toggleHint('h2')">💡 Show Hints</button>
+            <button type="button" class="ps-btn btn-sol" onclick="confirmSolution('sol2')">🔓 View Solution</button>
+          </div>
+          <div class="ps-hint-panel" id="h2">
+            <div class="hint-grid">
+              <div class="hint-item"><div class="hint-topic">OOP · Composition</div><div class="hint-text"><code>class Library: def __init__(self): self.catalog = Catalog(); self.desk = BorrowDesk()</code> — both created internally, no external refs.</div></div>
+              <div class="hint-item"><div class="hint-topic">OOP · Abstract</div><div class="hint-text"><code>from abc import ABC, abstractmethod; class LibraryItem(ABC): @abstractmethod def availability_status(self): pass</code></div></div>
+              <div class="hint-item"><div class="hint-topic">OOP · Polymorphism</div><div class="hint-text"><code>items = [Book(...), Magazine(...)]; [i.availability_status() for i in items]</code> — no isinstance checks needed.</div></div>
+              <div class="hint-item"><div class="hint-topic">MySQL · Transaction</div><div class="hint-text"><code>conn.autocommit = False</code> then UPDATE available + INSERT record + <code>conn.commit()</code>. On exception: <code>conn.rollback()</code>.</div></div>
+              <div class="hint-item"><div class="hint-topic">Pandas · Overdue</div><div class="hint-text"><code>df["borrowed_on"] = pd.to_datetime(...); overdue = df[(df["returned_on"].isna()) &amp; ((pd.Timestamp.now()-df["borrowed_on"]).dt.days &gt; 14)]</code></div></div>
+              <div class="hint-item"><div class="hint-topic">NumPy · np.divide</div><div class="hint-text"><code>np.divide(avail, total, out=np.zeros_like(avail,dtype=float), where=total!=0)</code> — safe division avoiding ZeroDivisionError.</div></div>
+              <div class="hint-item"><div class="hint-topic">NumPy · histogram</div><div class="hint-text"><code>durations = (returned - borrowed).dt.days.dropna().values; counts, edges = np.histogram(durations, bins=10)</code></div></div>
+              <div class="hint-item"><div class="hint-topic">Exceptions</div><div class="hint-text">Check <code>book.available == 0</code> → raise <code>BookNotAvailableError</code>. Check active borrows count ≥ 3 → raise <code>MaxBorrowLimitError</code>. Both before any DB write.</div></div>
+            </div>
+          </div>
+          <div class="ps-sol-panel" id="sol2">
+            <div class="sol-inner">
+              <div class="sol-header"><span class="sol-title">🔓 Library System — Solution Skeleton</span></div>
+              <pre class="sol-code"><span class="kw">import</span> mysql.connector
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">BookNotAvailableError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
+<span class="kw">class</span> <span class="fn">BookNotFoundError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">LibraryItem</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">availability_status</span>(<span class="nm">self</span>): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">Book</span>(<span class="fn">LibraryItem</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, isbn, title, available, total):
+        <span class="nm">self</span>.isbn=isbn; <span class="nm">self</span>.title=title; <span class="nm">self</span>.available=available; <span class="nm">self</span>.total=total
+    <span class="kw">def</span> <span class="fn">availability_status</span>(<span class="nm">self</span>): <span class="kw">return</span> <span class="st">f"{self.available}/{self.total} copies"</span>
+
+<span class="kw">class</span> <span class="fn">Catalog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>): <span class="nm">self</span>.books = {}
+    <span class="kw">def</span> <span class="fn">add</span>(<span class="nm">self</span>, b): <span class="nm">self</span>.books[b.isbn] = b
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="nm">self</span>, isbn):
+        <span class="kw">if</span> isbn <span class="kw">not in</span> <span class="nm">self</span>.books: <span class="kw">raise</span> <span class="fn">BookNotFoundError</span>(isbn)
+        <span class="kw">return</span> <span class="nm">self</span>.books[isbn]
+
+<span class="kw">class</span> <span class="fn">Library</span>:  <span class="cm"># Composition</span>
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>): <span class="nm">self</span>.catalog = <span class="fn">Catalog</span>()
+
+<span class="kw">def</span> <span class="fn">borrow_book</span>(conn, member_id, isbn):
+    conn.autocommit = <span class="kw">False</span>
+    <span class="kw">try</span>:
+        cur = conn.<span class="fn">cursor</span>(dictionary=<span class="kw">True</span>)
+        cur.<span class="fn">execute</span>(<span class="st">"SELECT available FROM books WHERE isbn=%s"</span>,(isbn,))
+        row = cur.<span class="fn">fetchone</span>()
+        <span class="kw">if not</span> row: <span class="kw">raise</span> <span class="fn">BookNotFoundError</span>(isbn)
+        <span class="kw">if</span> row[<span class="st">"available"</span>]==<span class="nm">0</span>: <span class="kw">raise</span> <span class="fn">BookNotAvailableError</span>()
+        cur.<span class="fn">execute</span>(<span class="st">"UPDATE books SET available=available-1 WHERE isbn=%s"</span>,(isbn,))
+        cur.<span class="fn">execute</span>(<span class="st">"INSERT INTO borrow_history(member_id,isbn,borrowed_on) VALUES(%s,%s,NOW())"</span>,(member_id,isbn))
+        conn.<span class="fn">commit</span>()
+    <span class="kw">except</span>:
+        conn.<span class="fn">rollback</span>(); <span class="kw">raise</span>
+    <span class="kw">finally</span>: conn.<span class="fn">close</span>()</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end ps-wrap -->
+
+  <!-- SNIPPET CARDS -->
+  <div class="sec">⚡ Code Snippets — Flip for Internal Flow</div>
+  <div class="snip-grid">
+
+    <!-- 1. Encapsulation -->
+    <div class="snip-scene"><div class="snip-card" id="sc0" style="--sc:#00e5a0">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Encapsulation</span><span class="snip-ftitle">Salary Guard</span></div>
+        <pre class="snip-code"><span class="kw">class</span> <span class="fn">Employee</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, name, salary):
+        <span class="nm">self</span>.name = name
+        <span class="nm">self</span>.__salary = salary  <span class="cm"># private</span>
+
+    <span class="kw">@property</span>
+    <span class="kw">def</span> <span class="fn">salary</span>(<span class="nm">self</span>):
+        <span class="kw">return</span> <span class="nm">self</span>.__salary
+
+    <span class="kw">@salary</span>.setter
+    <span class="kw">def</span> <span class="fn">salary</span>(<span class="nm">self</span>, val):
+        <span class="kw">if</span> val &lt; <span class="nm">0</span>:
+            <span class="kw">raise</span> <span class="fn">ValueError</span>(<span class="st">"Negative!"</span>)
+        <span class="nm">self</span>.__salary = val
+
+e = <span class="fn">Employee</span>(<span class="st">"Alice"</span>, <span class="nm">50000</span>)
+e.salary = <span class="nm">60000</span>      <span class="cm"># OK</span>
+<span class="fn">print</span>(e.salary)        <span class="cm"># 60000</span>
+<span class="cm"># e.__salary → AttributeError</span></pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc0')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Encapsulation — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc0')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Name Mangling</div><div class="flow-desc"><code>__salary</code> is renamed to <code>_Employee__salary</code> at compile time. Accessing <code>e.__salary</code> externally fails because that name doesn't exist in the instance dict.</div><div class="flow-mem"><span>e.__dict__:</span> {'name':'Alice', '_Employee__salary':60000}</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">@property Descriptor</div><div class="flow-desc">Python stores <code>salary</code> as a descriptor on the class (not the instance). <code>e.salary</code> triggers <code>Employee.salary.__get__(e)</code> — a transparent function call that looks like attribute access.</div><div class="flow-mem"><span>Employee.__dict__['salary']:</span> property object (has fget, fset)<br><span>e.salary:</span> → calls fget(e) → returns _Employee__salary</div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Setter Validation Gate</div><div class="flow-desc">Assignment <code>e.salary = val</code> triggers <code>fset(e, val)</code>. The setter runs validation before touching the private attribute — the caller can never bypass this gate.</div><div class="flow-mem"><span>e.salary = -1:</span> fset(-1) → val < 0 → raise ValueError<br><span>Private attr unchanged</span> — guard held</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <!-- 2. Inheritance -->
+    <div class="snip-scene"><div class="snip-card" id="sc1" style="--sc:#38bdf8">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Inheritance</span><span class="snip-ftitle">Staff Hierarchy</span></div>
+        <pre class="snip-code"><span class="kw">class</span> <span class="fn">Staff</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, name, salary):
+        <span class="nm">self</span>.name = name
+        <span class="nm">self</span>.salary = salary
+    <span class="kw">def</span> <span class="fn">info</span>(<span class="nm">self</span>):
+        <span class="kw">return</span> <span class="st">f"{self.name} — {self.salary}"</span>
+
+<span class="kw">class</span> <span class="fn">Manager</span>(<span class="fn">Staff</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, name, salary, dept):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(name, salary)
+        <span class="nm">self</span>.dept = dept
+    <span class="kw">def</span> <span class="fn">info</span>(<span class="nm">self</span>):
+        base = <span class="fn">super</span>().<span class="fn">info</span>()
+        <span class="kw">return</span> <span class="st">f"{base} [{self.dept}]"</span>
+
+m = <span class="fn">Manager</span>(<span class="st">"Bob"</span>, <span class="nm">90000</span>, <span class="st">"IT"</span>)
+<span class="fn">print</span>(m.<span class="fn">info</span>())
+<span class="cm"># Bob — 90000 [IT]</span></pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc1')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Inheritance — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc1')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">MRO — C3 Linearisation</div><div class="flow-desc">Python builds a Method Resolution Order for every class. For <code>Manager</code>: [Manager → Staff → object]. When Python looks up a method it walks this list and stops at the first match.</div><div class="flow-mem"><span>Manager.mro():</span> [Manager, Staff, object]</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">super().__init__ — Shared Instance</div><div class="flow-desc"><code>super().__init__(name, salary)</code> runs <code>Staff.__init__</code> on the <em>same</em> Manager instance (<code>self</code>). Attributes are set on the one object — not on a separate Staff object.</div><div class="flow-mem"><span>m.__dict__:</span> {name, salary, dept} — all on one object<br><span>No separate Staff object exists</span></div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">super().info() — Delegate Up</div><div class="flow-desc"><code>super().info()</code> inside Manager calls <code>Staff.info(self)</code> using the Manager instance. <code>self</code> still refers to the Manager — so <code>self.name</code> and <code>self.salary</code> are read from the Manager's dict.</div><div class="flow-mem"><span>Staff.info(self)</span> → self.name = "Bob", self.salary = 90000</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <!-- 3. Association -->
+    <div class="snip-scene"><div class="snip-card" id="sc2" style="--sc:#f59e0b">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Association</span><span class="snip-ftitle">Mark Links</span></div>
+        <pre class="snip-code"><span class="cm"># Student & Subject are INDEPENDENT</span>
+<span class="kw">class</span> <span class="fn">Student</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, sid, name):
+        <span class="nm">self</span>.sid = sid
+        <span class="nm">self</span>.name = name
+
+<span class="kw">class</span> <span class="fn">Subject</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, subid, name):
+        <span class="nm">self</span>.subid = subid
+        <span class="nm">self</span>.name = name
+
+<span class="cm"># Association: Mark links them by ID</span>
+<span class="kw">class</span> <span class="fn">Mark</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, s_id, sub_id, score):
+        <span class="nm">self</span>.s_id = s_id
+        <span class="nm">self</span>.sub_id = sub_id
+        <span class="nm">self</span>.score = score
+
+s1 = <span class="fn">Student</span>(<span class="nm">1</span>, <span class="st">"Alice"</span>)
+m1 = <span class="fn">Subject</span>(<span class="nm">10</span>, <span class="st">"Math"</span>)
+<span class="cm"># Mark exists independently</span>
+mk = <span class="fn">Mark</span>(s1.sid, m1.subid, <span class="nm">88</span>)</pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc2')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Association — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc2')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Independent Lifetimes</div><div class="flow-desc">Student, Subject, and Mark are three separate objects on the heap. Deleting <code>s1</code> doesn't affect <code>mk</code> or <code>m1</code>. This is the key distinction from Composition where child lifetime depends on parent.</div><div class="flow-mem"><span>s1 refcount → 0:</span> Student object GC'd<br><span>mk still alive:</span> holds only the int sid=1, no reference to s1</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Association via ID (Loose Coupling)</div><div class="flow-desc"><code>Mark</code> stores <code>s_id</code> and <code>sub_id</code> as plain integers — not object references. This mirrors how a database FK works. Resolving "who is student 1" requires a lookup, not a pointer follow.</div><div class="flow-mem"><span>mk.__dict__:</span> {s_id:1, sub_id:10, score:88}<br><span>No pointer</span> to s1 or m1 objects</div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Many-to-Many via Association Class</div><div class="flow-desc">One student can have many Mark records. One subject can appear in many Mark records. The association class (<code>Mark</code>) is the junction — exactly how a relational database models many-to-many relationships.</div><div class="flow-mem"><span>s1 ←→ [mk1, mk2, mk3]</span> (Alice's marks)<br><span>m1 ←→ [mk1, mk4, mk7]</span> (Math marks)</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <!-- 4. Aggregation -->
+    <div class="snip-scene"><div class="snip-card" id="sc3" style="--sc:#a78bfa">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Aggregation</span><span class="snip-ftitle">GradeBook</span></div>
+        <pre class="snip-code"><span class="kw">class</span> <span class="fn">Student</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, name): <span class="nm">self</span>.name = name
+
+<span class="cm"># Aggregation: GradeBook HOLDS but</span>
+<span class="cm"># does NOT OWN Students</span>
+<span class="kw">class</span> <span class="fn">GradeBook</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>):
+        <span class="nm">self</span>.students = []  <span class="cm"># reference list</span>
+
+    <span class="kw">def</span> <span class="fn">enrol</span>(<span class="nm">self</span>, student):
+        <span class="nm">self</span>.students.<span class="fn">append</span>(student)
+
+s1 = <span class="fn">Student</span>(<span class="st">"Alice"</span>)
+s2 = <span class="fn">Student</span>(<span class="st">"Bob"</span>)
+
+gb = <span class="fn">GradeBook</span>()
+gb.<span class="fn">enrol</span>(s1); gb.<span class="fn">enrol</span>(s2)
+
+<span class="cm"># s1 exists independently of gb</span>
+<span class="kw">del</span> gb  <span class="cm"># gb gone</span>
+<span class="fn">print</span>(s1.name)  <span class="cm"># Alice — still alive</span></pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc3')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Aggregation — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc3')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Shared Ownership — Refcounting</div><div class="flow-desc">When <code>gb.enrol(s1)</code> runs, Python stores a reference to the same <code>Student</code> object that <code>s1</code> points to. Two variables now point to one object — the refcount goes to 2.</div><div class="flow-mem"><span>s1 (stack):</span> ref → Student@0x7f10 (refcount=2)<br><span>gb.students[0]:</span> ref → same Student@0x7f10</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">del gb — Only GradeBook Dies</div><div class="flow-desc"><code>del gb</code> removes the GradeBook binding. Python drops the list inside gb, which releases one reference to each Student. But <code>s1</code> still holds a reference — refcount drops to 1, object survives.</div><div class="flow-mem"><span>After del gb:</span> Student@0x7f10 refcount = 1 (just s1)<br><span>GradeBook object:</span> refcount = 0 → deallocated</div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Contrast: Composition would GC Children</div><div class="flow-desc">If GradeBook <em>composed</em> students (created them internally, no external reference), <code>del gb</code> would leave refcount = 0 for each student — they'd all be garbage collected immediately.</div><div class="flow-mem"><span>Composition:</span> del parent → children refcount=0 → GC<br><span>Aggregation:</span> del container → children survive via external refs</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <!-- 5. Composition -->
+    <div class="snip-scene"><div class="snip-card" id="sc4" style="--sc:#fb923c">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Composition</span><span class="snip-ftitle">Library Owns</span></div>
+        <pre class="snip-code"><span class="kw">class</span> <span class="fn">Catalog</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>): <span class="nm">self</span>.books = {}
+    <span class="kw">def</span> <span class="fn">add</span>(<span class="nm">self</span>, isbn, title):
+        <span class="nm">self</span>.books[isbn] = title
+
+<span class="kw">class</span> <span class="fn">BorrowDesk</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>): <span class="nm">self</span>.records = []
+    <span class="kw">def</span> <span class="fn">borrow</span>(<span class="nm">self</span>, isbn, member):
+        <span class="nm">self</span>.records.<span class="fn">append</span>((isbn, member))
+
+<span class="cm"># Composition: Library CREATES and OWNS</span>
+<span class="kw">class</span> <span class="fn">Library</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>):
+        <span class="nm">self</span>.catalog = <span class="fn">Catalog</span>()   <span class="cm"># created here</span>
+        <span class="nm">self</span>.desk = <span class="fn">BorrowDesk</span>() <span class="cm"># owned by Library</span>
+
+lib = <span class="fn">Library</span>()
+lib.catalog.<span class="fn">add</span>(<span class="st">"978-1"</span>, <span class="st">"Python"</span>)
+lib.desk.<span class="fn">borrow</span>(<span class="st">"978-1"</span>, <span class="st">"Alice"</span>)
+<span class="cm"># del lib → catalog & desk also gone</span></pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc4')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Composition — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc4')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Library Creates Its Parts</div><div class="flow-desc">Inside <code>Library.__init__</code>, <code>Catalog()</code> and <code>BorrowDesk()</code> are instantiated. Only the Library holds references to them — no external variable ever points to these objects.</div><div class="flow-mem"><span>Catalog@0x7f20:</span> refcount = 1 (only lib.catalog)<br><span>BorrowDesk@0x7f30:</span> refcount = 1 (only lib.desk)</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Cascading Deletion</div><div class="flow-desc">When <code>del lib</code> runs, the Library object is GC'd. Its <code>__dict__</code> (containing <code>catalog</code> and <code>desk</code>) is released. Each child's refcount drops to 0 — they're immediately GC'd too. No survivors.</div><div class="flow-mem"><span>del lib:</span> Library refcount=0 → GC<br>→ lib.catalog released → Catalog refcount=0 → GC<br>→ lib.desk released → BorrowDesk refcount=0 → GC</div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Strong Ownership Semantics</div><div class="flow-desc">Composition expresses "whole owns part". It enforces tight coupling intentionally — Catalog has no meaning without a Library. This maps directly to the real world: a library catalog doesn't exist independently of a library.</div><div class="flow-mem"><span>Aggregation:</span> "has-a, shared" — parts survive parent<br><span>Composition:</span> "has-a, exclusive" — parts die with parent</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <!-- 6. Polymorphism -->
+    <div class="snip-scene"><div class="snip-card" id="sc5" style="--sc:#e879f9">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Polymorphism</span><span class="snip-ftitle">Uniform Interface</span></div>
+        <pre class="snip-code"><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+
+<span class="kw">class</span> <span class="fn">LibraryItem</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">availability_status</span>(<span class="nm">self</span>): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">Book</span>(<span class="fn">LibraryItem</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, title, avail, total):
+        <span class="nm">self</span>.title=title; <span class="nm">self</span>.avail=avail
+        <span class="nm">self</span>.total=total
+    <span class="kw">def</span> <span class="fn">availability_status</span>(<span class="nm">self</span>):
+        <span class="kw">return</span> <span class="st">f"{self.avail}/{self.total} copies"</span>
+
+<span class="kw">class</span> <span class="fn">Magazine</span>(<span class="fn">LibraryItem</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, title, issue):
+        <span class="nm">self</span>.title=title; <span class="nm">self</span>.issue=issue
+    <span class="kw">def</span> <span class="fn">availability_status</span>(<span class="nm">self</span>):
+        <span class="kw">return</span> <span class="st">f"Issue {self.issue} — on shelf"</span>
+
+items = [<span class="fn">Book</span>(<span class="st">"Python"</span>,<span class="nm">3</span>,<span class="nm">5</span>), <span class="fn">Magazine</span>(<span class="st">"IEEE"</span>,<span class="nm">42</span>)]
+<span class="kw">for</span> item <span class="kw">in</span> items:
+    <span class="fn">print</span>(item.<span class="fn">availability_status</span>())</pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc5')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Polymorphism — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc5')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Duck Typing — No isinstance Needed</div><div class="flow-desc">Python doesn't check the type of <code>item</code> before calling <code>availability_status()</code>. It just looks up the method on whatever object is there. If the method exists, it runs. This is duck typing.</div><div class="flow-mem"><span>item = Book:</span> calls Book.availability_status<br><span>item = Magazine:</span> calls Magazine.availability_status<br>— zero type-checking code written</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Abstract Method — Contract Enforcer</div><div class="flow-desc"><code>@abstractmethod</code> makes <code>LibraryItem</code> un-instantiable. Python records abstract methods in <code>LibraryItem.__abstractmethods__</code>. Subclasses that don't implement them also become abstract — caught at instantiation time, not runtime.</div><div class="flow-mem"><span>LibraryItem().__abstractmethods__:</span> {'availability_status'}<br><span>Book().__abstractmethods__:</span> set() — all implemented ✓</div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Method Dispatch — vtable in CPython</div><div class="flow-desc">CPython resolves <code>item.availability_status</code> by looking in the object's type's <code>__dict__</code>, then walking the MRO. This lookup is cached in the type's method cache after the first call — subsequent calls are O(1).</div><div class="flow-mem"><span>Dispatch:</span> type(item).__dict__ → MRO walk<br><span>After first call:</span> cached in type's version tag</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+    <!-- 7. Abstraction -->
+    <div class="snip-scene"><div class="snip-card" id="sc6" style="--sc:#34d399">
+      <div class="snip-front">
+        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">OOP · Abstraction</span><span class="snip-ftitle">Hide Complexity</span></div>
+        <pre class="snip-code"><span class="kw">from</span> abc <span class="kw">import</span> ABC, abstractmethod
+<span class="kw">import</span> mysql.connector
+
+<span class="kw">class</span> <span class="fn">DataStore</span>(ABC):
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">save</span>(<span class="nm">self</span>, record): <span class="kw">pass</span>
+    <span class="kw">@abstractmethod</span>
+    <span class="kw">def</span> <span class="fn">fetch</span>(<span class="nm">self</span>, key): <span class="kw">pass</span>
+
+<span class="kw">class</span> <span class="fn">MySQLStore</span>(<span class="fn">DataStore</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nm">self</span>, conn):
+        <span class="nm">self</span>.conn = conn
+
+    <span class="kw">def</span> <span class="fn">save</span>(<span class="nm">self</span>, record):
+        cur = <span class="nm">self</span>.conn.<span class="fn">cursor</span>()
+        cur.<span class="fn">execute</span>(<span class="st">"INSERT INTO emp VALUES(%s,%s)"</span>,
+                   (record[<span class="st">"id"</span>], record[<span class="st">"name"</span>]))
+        <span class="nm">self</span>.conn.<span class="fn">commit</span>()
+
+    <span class="kw">def</span> <span class="fn">fetch</span>(<span class="nm">self</span>, key):
+        cur = <span class="nm">self</span>.conn.<span class="fn">cursor</span>(dictionary=<span class="kw">True</span>)
+        cur.<span class="fn">execute</span>(<span class="st">"SELECT * FROM emp WHERE id=%s"</span>,(key,))
+        <span class="kw">return</span> cur.<span class="fn">fetchone</span>()
+
+<span class="cm"># Caller uses DataStore interface only</span>
+<span class="kw">def</span> <span class="fn">register</span>(store: <span class="fn">DataStore</span>, record):
+    store.<span class="fn">save</span>(record)  <span class="cm"># no MySQL knowledge</span></pre>
+        <button type="button" class="snip-fbtn" onclick="flipCard('sc6')"><span class="snip-spin">⟳</span> Show How It Works</button>
+      </div>
+      <div class="snip-back">
+        <div class="snip-bhead"><span class="snip-btitle">⚙️ Abstraction — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc6')">✕</button></div>
+        <div class="snip-flow">
+          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Abstract Class = Contract Only</div><div class="flow-desc"><code>DataStore</code> defines <em>what</em> must exist (save, fetch) but says nothing about <em>how</em>. It's a pure interface contract. The caller only needs to know the contract — the implementation is hidden behind it.</div><div class="flow-mem"><span>DataStore:</span> knows save() and fetch() exist<br><span>Caller:</span> never imports mysql.connector — abstraction achieved</div></div></div>
+          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Swappable Implementation</div><div class="flow-desc">You can swap <code>MySQLStore</code> for an <code>InMemoryStore</code> or <code>PostgreSQLStore</code> without changing any calling code. <code>register(store, record)</code> works identically regardless of which concrete store is passed.</div><div class="flow-mem"><span>register(MySQLStore(conn), rec):</span> writes to MySQL<br><span>register(InMemoryStore(), rec):</span> writes to dict<br>— same call, different behaviour</div></div></div>
+          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Type Hints as Documentation</div><div class="flow-desc"><code>store: DataStore</code> in the function signature is a type hint — Python doesn't enforce it at runtime, but IDEs, mypy, and code readers know exactly what interface <code>store</code> must conform to. Abstraction + documentation in one.</div><div class="flow-mem"><span>At runtime:</span> hint ignored — duck typing applies<br><span>mypy:</span> checks MySQLStore implements all abstract methods</div></div></div>
+        </div>
+      </div>
+    </div></div>
+
+  </div><!-- end snip-grid -->
+
+</div><!-- end code panel -->
+</div><!-- end wrap -->
+
 <script>
-/* ── Dynamic question count loader ─────────────────────────
-   Each quiz file has: <meta name="quiz-count" content="N"/>
-   We fetch each file, parse the meta tag, and update the badge.
-   Falls back gracefully if the file is a placeholder (no meta).
-─────────────────────────────────────────────────────────── */
+/* ── Sliding pill tab switcher ── */
+function positionPill() {
+  const active = document.querySelector('.sw-btn.active');
+  const pill = document.getElementById('swPill');
+  if (!active || !pill) return;
+  pill.style.left   = active.offsetLeft + 'px';
+  pill.style.top    = active.offsetTop  + 'px';
+  pill.style.width  = active.offsetWidth + 'px';
+  pill.style.height = active.offsetHeight + 'px';
+}
+function switchTab(tab) {
+  document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('btn-' + tab).classList.add('active');
+  document.getElementById('p-' + tab).classList.add('active');
+  positionPill();
+  // Scroll to top of content panel on tab switch
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+// Run after load AND after fonts are ready for accurate pill sizing
+window.addEventListener('load', positionPill);
+window.addEventListener('resize', positionPill);
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(positionPill);
+}
+
+/* ── Problem statement accordion ── */
+function togglePS(id) {
+  const el = document.getElementById(id);
+  const wasOpen = el.classList.contains('open');
+  el.classList.toggle('open');
+  // Smooth scroll into view when opening, with a slight delay for the animation
+  if (!wasOpen) {
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+}
+
+/* ── Hint toggle ── */
+function toggleHint(id) {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('show');
+  // Robustly find the hint button anywhere in the preceding sibling tree
+  const actionsEl = panel.previousElementSibling;
+  const btn = actionsEl ? actionsEl.querySelector('.btn-hint') : null;
+  if (btn) btn.textContent = panel.classList.contains('show') ? '🔒 Hide Hints' : '💡 Show Hints';
+}
+
+/* ── Solution — triple confirmation ── */
+function confirmSolution(id) {
+  const msgs = [
+    '⚠️ Are you sure? Try solving it yourself first.',
+    '🤔 Really? One more try before peeking?',
+    '😅 Last chance! Click OK to reveal the solution.'
+  ];
+  for (const msg of msgs) {
+    if (!confirm(msg)) return;
+  }
+  const panel = document.getElementById(id);
+  panel.classList.toggle('show');
+  // Scroll solution into view after it opens
+  if (panel.classList.contains('show')) {
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+}
+
+/* ── Flip cards (individual) ── */
+function flipCard(id) {
+  document.getElementById(id).classList.toggle('flipped');
+}
+
+/* ── Dynamic question count ── */
 document.querySelectorAll('.q-count[data-src]').forEach(badge => {
-  const src = badge.dataset.src;
-  fetch(src)
+  fetch(badge.dataset.src)
     .then(r => r.text())
     .then(html => {
       const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -423,6 +1529,5 @@ document.querySelectorAll('.q-count[data-src]').forEach(badge => {
     .catch(() => { badge.textContent = '— Qs'; });
 });
 </script>
-
 </body>
 </html>
