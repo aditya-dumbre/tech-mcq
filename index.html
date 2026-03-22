@@ -11,7 +11,7 @@
   --bg:#07090f;--s1:#0c0e16;--s2:#10121c;--card:#141824;--border:#1e2438;
   --text:#e2e8f8;--muted:#4e5a7a;--dim:#7a88aa;
   --c0:#00e5a0;--c1:#38bdf8;--c2:#f59e0b;--c3:#a78bfa;
-  --c4:#f8ff7a;--c5:#f43f5e;--c6:#e879f9;--c7:#6eeeff;
+  --c4:#f5ff8c;--c5:#f43f5e;--c6:#e879f9;--c7:#8ef2ff;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -318,14 +318,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="qcard-desc">Read and predict the output of real code snippets — OOP, loops, libraries, edge cases.</div>
     <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi q-count" data-src="snippets.html">…</span><span class="pill">All Levels</span></div><div class="qarrow">→</div></div>
   </a>
-  <a class="qcard featured soon" href="mock_test.html" style="--ac:var(--c5)">
+  <a class="qcard featured" href="mock_test.html" style="--ac:var(--c5)">
     <div class="qcard-top"></div>
     <div class="qcard-ico" style="width:52px;height:52px;font-size:1.7rem;flex-shrink:0;">🏆</div>
     <div class="qcard-body">
       <span style="font-family:'Mono',monospace;font-size:.64rem;color:var(--muted);">08</span>
       <div class="qcard-title">Full Mock Test</div>
-      <div class="qcard-desc">All topics combined — timed, scored, analysed like a real exam.</div>
-      <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi">40 Qs</span><span class="pill">Mixed</span><span class="soon-lbl">Coming Soon</span></div><div class="qarrow">→</div></div>
+      <div class="qcard-desc">4 full tests · 20 questions each — timed, scored, and fully analysed like a real exam.</div>
+      <div class="qcard-foot"><div class="qcard-meta"><span class="pill hi">4 × 20 Qs</span><span class="pill">Basic → Hard</span><span class="pill">All Topics</span></div><div class="qarrow">→</div></div>
     </div>
   </a>
 </div>
@@ -1435,219 +1435,6 @@ items = [<span class="fn">Book</span>(<span class="st">"Python"</span>,<span cla
           <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Abstract Class = Contract Only</div><div class="flow-desc"><code>DataStore</code> defines <em>what</em> must exist (save, fetch) but says nothing about <em>how</em>. It's a pure interface contract. The caller only needs to know the contract — the implementation is hidden behind it.</div><div class="flow-mem"><span>DataStore:</span> knows save() and fetch() exist<br><span>Caller:</span> never imports mysql.connector — abstraction achieved</div></div></div>
           <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Swappable Implementation</div><div class="flow-desc">You can swap <code>MySQLStore</code> for an <code>InMemoryStore</code> or <code>PostgreSQLStore</code> without changing any calling code. <code>register(store, record)</code> works identically regardless of which concrete store is passed.</div><div class="flow-mem"><span>register(MySQLStore(conn), rec):</span> writes to MySQL<br><span>register(InMemoryStore(), rec):</span> writes to dict<br>— same call, different behaviour</div></div></div>
           <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Type Hints as Documentation</div><div class="flow-desc"><code>store: DataStore</code> in the function signature is a type hint — Python doesn't enforce it at runtime, but IDEs, mypy, and code readers know exactly what interface <code>store</code> must conform to. Abstraction + documentation in one.</div><div class="flow-mem"><span>At runtime:</span> hint ignored — duck typing applies<br><span>mypy:</span> checks MySQLStore implements all abstract methods</div></div></div>
-        </div>
-      </div>
-    </div></div>
-
-    <!-- 8. Exception Handling -->
-    <div class="snip-scene"><div class="snip-card" id="sc7" style="--sc:#f43f5e">
-      <div class="snip-front">
-        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">Exception Handling</span><span class="snip-ftitle">Graceful Failures</span></div>
-        <pre class="snip-code"><span class="kw">class</span> <span class="fn">SalaryValidationError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
-<span class="kw">class</span> <span class="fn">EmployeeNotFoundError</span>(<span class="fn">Exception</span>): <span class="kw">pass</span>
- 
-<span class="kw">def</span> <span class="fn">set_salary</span>(emp_id, amount, conn):
-    <span class="kw">if</span> amount &lt; <span class="nm">0</span>:
-        <span class="kw">raise</span> <span class="fn">SalaryValidationError</span>(
-            <span class="st">f"Negative salary: {amount}"</span>)
-    <span class="kw">try</span>:
-        cur = conn.<span class="fn">cursor</span>()
-        cur.<span class="fn">execute</span>(
-            <span class="st">"UPDATE emp SET salary=%s WHERE id=%s"</span>,
-            (amount, emp_id))
-        <span class="kw">if</span> cur.rowcount == <span class="nm">0</span>:
-            <span class="kw">raise</span> <span class="fn">EmployeeNotFoundError</span>(emp_id)
-        conn.<span class="fn">commit</span>()
-    <span class="kw">except</span> <span class="fn">Exception</span> <span class="kw">as</span> e:
-        conn.<span class="fn">rollback</span>()
-        <span class="kw">raise</span> <span class="fn">EmployeeNotFoundError</span>(<span class="st">"DB fail"</span>) <span class="kw">from</span> e
-    <span class="kw">finally</span>:
-        conn.<span class="fn">close</span>()  <span class="cm"># always runs</span></pre>
-        <button type="button" class="snip-fbtn" onclick="flipCard('sc7')"><span class="snip-spin">⟳</span> Show How It Works</button>
-      </div>
-      <div class="snip-back">
-        <div class="snip-bhead"><span class="snip-btitle">⚙️ Exception Handling — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc7')">✕</button></div>
-        <div class="snip-flow">
-          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Custom Exceptions = Domain Language</div><div class="flow-desc">Subclassing <code>Exception</code> lets you name errors in your domain's vocabulary. <code>SalaryValidationError</code> is far more informative than a bare <code>ValueError</code>. Callers can catch specific types and react differently to each.</div><div class="flow-mem"><span>except SalaryValidationError:</span> show form error<br><span>except EmployeeNotFoundError:</span> return 404<br>— same try block, two distinct recovery paths</div></div></div>
-          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Exception Chaining — raise … from e</div><div class="flow-desc"><code>raise EmployeeNotFoundError("DB fail") from e</code> wraps the original DB exception. The original is preserved as <code>__cause__</code> — you see both in the traceback. The domain error surfaces to callers; the raw DB error stays available for debugging.</div><div class="flow-mem"><span>err.__cause__:</span> original mysql.connector.Error<br><span>Traceback:</span> shows both errors with "The above exception was the direct cause..."</div></div></div>
-          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">finally — Guaranteed Cleanup</div><div class="flow-desc"><code>finally</code> runs regardless of whether the try block succeeded, raised, or re-raised. <code>conn.close()</code> here guarantees no connection leak — even if a custom exception is thrown before commit, the connection is still closed cleanly.</div><div class="flow-mem"><span>Success path:</span> commit → finally → close<br><span>Error path:</span> rollback → raise → finally → close<br>— connection always released</div></div></div>
-        </div>
-      </div>
-    </div></div>
- 
-    <!-- 9. NumPy -->
-    <div class="snip-scene"><div class="snip-card" id="sc8" style="--sc:#38bdf8">
-      <div class="snip-front">
-        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">NumPy</span><span class="snip-ftitle">Array Operations</span></div>
-        <pre class="snip-code"><span class="kw">import</span> numpy <span class="kw">as</span> np
- 
-salaries = np.<span class="fn">array</span>([<span class="nm">42000</span>, <span class="nm">55000</span>, <span class="nm">61000</span>,
-                       <span class="nm">38000</span>, <span class="nm">95000</span>, <span class="nm">48000</span>])
- 
-<span class="cm"># Descriptive stats — vectorised, no loop</span>
-mean  = np.<span class="fn">mean</span>(salaries)
-std   = np.<span class="fn">std</span>(salaries)
-p25, p75 = np.<span class="fn">percentile</span>(salaries, [<span class="nm">25</span>, <span class="nm">75</span>])
- 
-<span class="cm"># Outlier detection via z-score boolean mask</span>
-z     = (salaries - mean) / std
-outliers = salaries[np.<span class="fn">abs</span>(z) &gt; <span class="nm">1.5</span>]
- 
-<span class="cm"># Vectorised raise — no Python loop</span>
-raised = np.<span class="fn">where</span>(salaries &lt; mean,
-                  salaries * <span class="nm">1.10</span>,
-                  salaries)
-<span class="fn">print</span>(outliers, raised)</pre>
-        <button type="button" class="snip-fbtn" onclick="flipCard('sc8')"><span class="snip-spin">⟳</span> Show How It Works</button>
-      </div>
-      <div class="snip-back">
-        <div class="snip-bhead"><span class="snip-btitle">⚙️ NumPy — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc8')">✕</button></div>
-        <div class="snip-flow">
-          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Vectorised Operations — No Python Loop</div><div class="flow-desc"><code>np.mean</code>, <code>np.std</code>, <code>np.percentile</code> all operate on the entire array in a single C-level call. There is no Python <code>for</code> loop — NumPy dispatches to optimised BLAS/LAPACK routines internally, making these operations orders of magnitude faster than pure Python.</div><div class="flow-mem"><span>np.mean(arr):</span> sum/count in C — O(n) but tiny constant<br><span>np.percentile(arr,[25,75]):</span> partial sort + interpolation</div></div></div>
-          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Boolean Mask Indexing</div><div class="flow-desc"><code>np.abs(z) &gt; 1.5</code> produces a boolean array of the same shape. Passing it as an index — <code>salaries[mask]</code> — selects only the True positions. No list comprehension, no filter — the selection happens in C memory with a single pass.</div><div class="flow-mem"><span>z array:</span>  [−0.4, 0.2, 0.6, −0.8, 2.1, −0.1]<br><span>mask:</span>      [F, F, F, F, T, F]<br><span>result:</span>   [95000] — only the outlier</div></div></div>
-          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">np.where — Conditional Vectorisation</div><div class="flow-desc"><code>np.where(condition, x, y)</code> applies element-wise: where True pick from x, else from y. Here it applies a 10% raise only to below-average salaries — no if/else, no loop, results built in one pass over the underlying data buffer.</div><div class="flow-mem"><span>salary &lt; mean → True:</span> salary × 1.10<br><span>salary ≥ mean → False:</span> salary unchanged<br>— entire array transformed in one C call</div></div></div>
-        </div>
-      </div>
-    </div></div>
- 
-    <!-- 10. Pandas -->
-    <div class="snip-scene"><div class="snip-card" id="sc9" style="--sc:#f59e0b">
-      <div class="snip-front">
-        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">Pandas</span><span class="snip-ftitle">DataFrame Analysis</span></div>
-        <pre class="snip-code"><span class="kw">import</span> pandas <span class="kw">as</span> pd
- 
-df = pd.<span class="fn">read_csv</span>(<span class="st">"employees.csv"</span>)
- 
-<span class="cm"># Coerce dates, derive tenure column</span>
-df[<span class="st">"joined"</span>] = pd.<span class="fn">to_datetime</span>(df[<span class="st">"joined"</span>])
-df[<span class="st">"tenure_yrs"</span>] = (
-    (pd.Timestamp.<span class="fn">now</span>() - df[<span class="st">"joined"</span>])
-    .dt.days / <span class="nm">365</span>
-)
- 
-<span class="cm"># Dept-level stats in one expression</span>
-summary = (df.<span class="fn">groupby</span>(<span class="st">"department"</span>)[<span class="st">"salary"</span>]
-             .<span class="fn">agg</span>(mean=<span class="st">"mean"</span>, max=<span class="st">"max"</span>, count=<span class="st">"count"</span>)
-             .<span class="fn">reset_index</span>())
- 
-<span class="cm"># Filter overdue / high-earners</span>
-high = df[df[<span class="st">"salary"</span>] &gt; df[<span class="st">"salary"</span>].<span class="fn">quantile</span>(<span class="nm">0.9</span>)]
-<span class="fn">print</span>(summary, high[[<span class="st">"name"</span>,<span class="st">"salary"</span>]])</pre>
-        <button type="button" class="snip-fbtn" onclick="flipCard('sc9')"><span class="snip-spin">⟳</span> Show How It Works</button>
-      </div>
-      <div class="snip-back">
-        <div class="snip-bhead"><span class="snip-btitle">⚙️ Pandas — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc9')">✕</button></div>
-        <div class="snip-flow">
-          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">pd.to_datetime — Vectorised Parsing</div><div class="flow-desc"><code>pd.to_datetime</code> converts an entire string column to NumPy <code>datetime64[ns]</code> in one call. Once a datetime column, Pandas exposes the <code>.dt</code> accessor — <code>.dt.days</code>, <code>.dt.month</code>, etc. — all vectorised, no <code>strptime</code> loop needed.</div><div class="flow-mem"><span>Before:</span> dtype object (strings)<br><span>After:</span> dtype datetime64[ns]<br><span>.dt.days:</span> timedelta → int64 array in C</div></div></div>
-          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">groupby + agg — Split-Apply-Combine</div><div class="flow-desc"><code>groupby("department")</code> partitions rows by unique dept values. <code>.agg(mean="mean", max="max")</code> applies each aggregation to each group simultaneously. The named-aggregation dict gives clean output column names. Pandas executes this in Cython, not Python loops.</div><div class="flow-mem"><span>Split:</span> rows bucketed by dept key<br><span>Apply:</span> mean/max/count per bucket<br><span>Combine:</span> results stacked into one DataFrame</div></div></div>
-          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">Boolean Indexing + quantile</div><div class="flow-desc"><code>df["salary"].quantile(0.9)</code> returns the 90th-percentile scalar. Comparing the entire column against it produces a boolean Series. Passing that Series as an index — <code>df[mask]</code> — returns only matching rows. No filter(), no list comprehension — pure vectorised selection.</div><div class="flow-mem"><span>quantile(0.9):</span> sorted interpolation → scalar<br><span>df["salary"] &gt; scalar:</span> bool Series<br><span>df[bool Series]:</span> filtered DataFrame view</div></div></div>
-        </div>
-      </div>
-    </div></div>
- 
-    <!-- 11. Matplotlib -->
-    <div class="snip-scene"><div class="snip-card" id="sc10" style="--sc:#a78bfa">
-      <div class="snip-front">
-        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">Matplotlib</span><span class="snip-ftitle">Salary Dashboard</span></div>
-        <pre class="snip-code"><span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
-<span class="kw">import</span> numpy <span class="kw">as</span> np
- 
-depts  = [<span class="st">"Eng"</span>, <span class="st">"HR"</span>, <span class="st">"Sales"</span>]
-avgs   = [<span class="nm">72000</span>, <span class="nm">48000</span>, <span class="nm">61000</span>]
-all_sal = np.<span class="fn">array</span>([<span class="nm">42000</span>,<span class="nm">55000</span>,<span class="nm">95000</span>,
-                     <span class="nm">38000</span>,<span class="nm">61000</span>,<span class="nm">72000</span>])
-sizes  = [<span class="nm">12</span>, <span class="nm">5</span>, <span class="nm">8</span>]
- 
-fig, axes = plt.<span class="fn">subplots</span>(<span class="nm">1</span>, <span class="nm">3</span>, figsize=(<span class="nm">13</span>, <span class="nm">4</span>))
- 
-axes[<span class="nm">0</span>].<span class="fn">bar</span>(depts, avgs, color=<span class="st">"#38bdf8"</span>)
-axes[<span class="nm">0</span>].<span class="fn">set_title</span>(<span class="st">"Avg Salary by Dept"</span>)
- 
-axes[<span class="nm">1</span>].<span class="fn">hist</span>(all_sal, bins=<span class="nm">6</span>, color=<span class="st">"#a78bfa"</span>)
-axes[<span class="nm">1</span>].<span class="fn">axvline</span>(np.<span class="fn">mean</span>(all_sal), color=<span class="st">"red"</span>,
-               linestyle=<span class="st">"--"</span>, label=<span class="st">"mean"</span>)
-axes[<span class="nm">1</span>].<span class="fn">set_title</span>(<span class="st">"Salary Distribution"</span>)
- 
-axes[<span class="nm">2</span>].<span class="fn">pie</span>(sizes, labels=depts, autopct=<span class="st">"%1.0f%%"</span>)
-axes[<span class="nm">2</span>].<span class="fn">set_title</span>(<span class="st">"Headcount"</span>)
- 
-plt.<span class="fn">tight_layout</span>(); plt.<span class="fn">show</span>()</pre>
-        <button type="button" class="snip-fbtn" onclick="flipCard('sc10')"><span class="snip-spin">⟳</span> Show How It Works</button>
-      </div>
-      <div class="snip-back">
-        <div class="snip-bhead"><span class="snip-btitle">⚙️ Matplotlib — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc10')">✕</button></div>
-        <div class="snip-flow">
-          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">plt.subplots — Figure + Axes Grid</div><div class="flow-desc"><code>plt.subplots(1, 3)</code> creates one Figure containing three independent Axes objects in a row. <code>figsize=(13,4)</code> sets the canvas in inches. Each <code>axes[i]</code> is a fully independent coordinate system — you draw on each without affecting the others.</div><div class="flow-mem"><span>fig:</span> the outer canvas (holds everything)<br><span>axes[0/1/2]:</span> individual plot areas<br>— one Figure, three independent charts</div></div></div>
-          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">Bar + Hist + Pie — Three Chart Types</div><div class="flow-desc"><code>axes[0].bar</code> draws a categorical bar chart. <code>axes[1].hist</code> bins continuous data automatically — bins=6 splits the range into 6 equal-width buckets. <code>axvline</code> overlays a vertical reference line at the mean. <code>axes[2].pie</code> draws proportional slices with <code>autopct</code> for percentages.</div><div class="flow-mem"><span>bar:</span> categorical x, numeric y<br><span>hist:</span> continuous data → frequency bins<br><span>pie:</span> parts-of-whole, slices sized by value</div></div></div>
-          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">tight_layout — Auto Spacing</div><div class="flow-desc"><code>plt.tight_layout()</code> inspects all text elements (titles, tick labels, axis labels) and adjusts subplot padding so nothing overlaps. Without it, titles of adjacent subplots often clip into each other. Always call it as the last step before <code>plt.show()</code> or <code>plt.savefig()</code>.</div><div class="flow-mem"><span>Without tight_layout:</span> title text may overlap neighbour<br><span>With tight_layout:</span> padding auto-calculated — clean output</div></div></div>
-        </div>
-      </div>
-    </div></div>
- 
-    <!-- 12. Lambda Functions -->
-    <div class="snip-scene"><div class="snip-card" id="sc11" style="--sc:#fb923c">
-      <div class="snip-front">
-        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">Lambda Functions</span><span class="snip-ftitle">Inline Callables</span></div>
-        <pre class="snip-code"><span class="cm"># Lambda = anonymous single-expression function</span>
-square = <span class="kw">lambda</span> x: x ** <span class="nm">2</span>
-add    = <span class="kw">lambda</span> x, y: x + y
- 
-<span class="cm"># Sort employees by salary descending</span>
-employees = [
-    {<span class="st">"name"</span>: <span class="st">"Ada"</span>,  <span class="st">"salary"</span>: <span class="nm">72000</span>},
-    {<span class="st">"name"</span>: <span class="st">"Bob"</span>,  <span class="st">"salary"</span>: <span class="nm">45000</span>},
-    {<span class="st">"name"</span>: <span class="st">"Cara"</span>, <span class="st">"salary"</span>: <span class="nm">91000</span>},
-]
-ranked = <span class="fn">sorted</span>(employees,
-                key=<span class="kw">lambda</span> e: e[<span class="st">"salary"</span>],
-                reverse=<span class="kw">True</span>)
- 
-<span class="cm"># map / filter with lambda</span>
-net_pay  = <span class="fn">list</span>(<span class="fn">map</span>(<span class="kw">lambda</span> e: e[<span class="st">"salary"</span>]*<span class="nm">0.8</span>, employees))
-high_pay = <span class="fn">list</span>(<span class="fn">filter</span>(<span class="kw">lambda</span> e: e[<span class="st">"salary"</span>]&gt;<span class="nm">50000</span>, employees))</pre>
-        <button type="button" class="snip-fbtn" onclick="flipCard('sc11')"><span class="snip-spin">⟳</span> Show How It Works</button>
-      </div>
-      <div class="snip-back">
-        <div class="snip-bhead"><span class="snip-btitle">⚙️ Lambda — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc11')">✕</button></div>
-        <div class="snip-flow">
-          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">Lambda = Inline Function Object</div><div class="flow-desc"><code>lambda x: x**2</code> creates a real function object — it has a <code>__call__</code>, a closure, and shows as <code>&lt;lambda&gt;</code> in tracebacks. It's identical to <code>def f(x): return x**2</code> except it can't contain statements or be introspected by name. Use it when the function is short and only needed once.</div><div class="flow-mem"><span>type(square):</span> &lt;class 'function'&gt;<br><span>square.__name__:</span> '&lt;lambda&gt;'<br>— same object, anonymous name</div></div></div>
-          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">key= in sorted — Schwartzian Transform</div><div class="flow-desc">Python's <code>sorted</code> applies the <code>key</code> function once per element, caches the results, then sorts by the cached values. This is the Schwartzian transform — it avoids recomputing the key on every comparison. <code>lambda e: e["salary"]</code> extracts the sort field; <code>reverse=True</code> flips the order.</div><div class="flow-mem"><span>key called:</span> N times (once per element)<br><span>comparisons:</span> use cached keys — O(n log n)<br>— no repeated dict lookups during sort</div></div></div>
-          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">map / filter — Lazy Iterators</div><div class="flow-desc"><code>map(fn, iterable)</code> and <code>filter(fn, iterable)</code> return lazy iterators — nothing is computed until you consume them. Wrapping in <code>list()</code> forces evaluation. In modern Python, list comprehensions (<code>[e["salary"]*0.8 for e in employees]</code>) are often preferred for readability, but map/filter with lambda is idiomatic in functional pipelines.</div><div class="flow-mem"><span>map(...):</span> lazy — 0 calls until iterated<br><span>list(map(...)):</span> forces all N calls<br>— prefer comprehensions for readability</div></div></div>
-        </div>
-      </div>
-    </div></div>
- 
-    <!-- 13. File Handling -->
-    <div class="snip-scene"><div class="snip-card" id="sc12" style="--sc:#e879f9">
-      <div class="snip-front">
-        <div class="snip-fhead"><span class="snip-dot"></span><span class="snip-ftag">File Handling</span><span class="snip-ftitle">Read · Write · CSV</span></div>
-        <pre class="snip-code"><span class="kw">import</span> csv, json
- 
-<span class="cm"># Text file — context manager guarantees close</span>
-<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"log.txt"</span>, <span class="st">"a"</span>, encoding=<span class="st">"utf-8"</span>) <span class="kw">as</span> f:
-    f.<span class="fn">write</span>(<span class="st">"Employee added\n"</span>)
- 
-<span class="cm"># CSV — DictWriter preserves column names</span>
-fields = [<span class="st">"id"</span>, <span class="st">"name"</span>, <span class="st">"salary"</span>]
-<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"emp.csv"</span>, <span class="st">"w"</span>, newline=<span class="st">""</span>) <span class="kw">as</span> f:
-    w = csv.<span class="fn">DictWriter</span>(f, fieldnames=fields)
-    w.<span class="fn">writeheader</span>()
-    w.<span class="fn">writerow</span>({<span class="st">"id"</span>:<span class="nm">1</span>,<span class="st">"name"</span>:<span class="st">"Ada"</span>,<span class="st">"salary"</span>:<span class="nm">72000</span>})
- 
-<span class="cm"># JSON — serialise / deserialise</span>
-data = {<span class="st">"employees"</span>: [{<span class="st">"id"</span>:<span class="nm">1</span>,<span class="st">"name"</span>:<span class="st">"Ada"</span>}]}
-<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"emp.json"</span>, <span class="st">"w"</span>) <span class="kw">as</span> f:
-    json.<span class="fn">dump</span>(data, f, indent=<span class="nm">2</span>)
-<span class="kw">with</span> <span class="fn">open</span>(<span class="st">"emp.json"</span>) <span class="kw">as</span> f:
-    loaded = json.<span class="fn">load</span>(f)</pre>
-        <button type="button" class="snip-fbtn" onclick="flipCard('sc12')"><span class="snip-spin">⟳</span> Show How It Works</button>
-      </div>
-      <div class="snip-back">
-        <div class="snip-bhead"><span class="snip-btitle">⚙️ File Handling — Flow</span><button type="button" class="snip-bclose" onclick="flipCard('sc12')">✕</button></div>
-        <div class="snip-flow">
-          <div class="flow-step"><div class="flow-n">1</div><div><div class="flow-title">with open — Context Manager</div><div class="flow-desc"><code>with open(...) as f</code> calls <code>f.__enter__()</code> on entry and <code>f.__exit__()</code> on exit — even if an exception is raised inside the block. <code>__exit__</code> calls <code>f.close()</code>, which flushes the OS buffer and releases the file descriptor. Without <code>with</code>, an exception before <code>f.close()</code> leaks the descriptor.</div><div class="flow-mem"><span>Mode "a":</span> append — existing content preserved<br><span>Mode "w":</span> write — file truncated on open<br><span>Mode "r":</span> read (default) — FileNotFoundError if missing</div></div></div>
-          <div class="flow-step"><div class="flow-n">2</div><div><div class="flow-title">csv.DictWriter — Column-Safe CSV</div><div class="flow-desc"><code>DictWriter</code> maps dict keys to columns by name — order doesn't matter, and missing fields get a fill-value instead of silently writing the wrong column. <code>newline=""</code> on <code>open()</code> is required on Windows to prevent the csv module's own newline logic from being doubled by the OS text-mode translation.</div><div class="flow-mem"><span>writeheader():</span> writes the fieldnames row first<br><span>writerow(dict):</span> maps keys → columns by name<br><span>newline="":</span> prevents \r\r\n on Windows</div></div></div>
-          <div class="flow-step"><div class="flow-n">3</div><div><div class="flow-title">json.dump / json.load — Serialisation</div><div class="flow-desc"><code>json.dump(obj, f, indent=2)</code> serialises Python dicts/lists/strings/ints to UTF-8 JSON text. <code>indent=2</code> pretty-prints. <code>json.load(f)</code> parses back to Python objects. JSON only supports string keys — integer keys are silently coerced to strings on dump and stay strings on load.</div><div class="flow-mem"><span>dump:</span> Python dict → JSON string in file<br><span>load:</span> JSON string → Python dict<br><span>int key caveat:</span> {1: "x"} → {"1": "x"} after round-trip</div></div></div>
         </div>
       </div>
     </div></div>
