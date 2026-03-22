@@ -1494,6 +1494,27 @@ items = [<span class="fn">Book</span>(<span class="st">"Python"</span>,<span cla
 </div><!-- end wrap -->
 
 <script>
+
+/* ── Mock test toast ── */
+const TOAST_DURATION = 8000; // ms before auto-dismiss
+function dismissToast() {
+  const t = document.getElementById('mockToast');
+  if (!t) return;
+  t.style.animation = 'toastOut .35s ease forwards';
+  setTimeout(() => t.remove(), 360);
+}
+window.addEventListener('load', () => {
+  const bar = document.getElementById('toastBar');
+  if (bar) {
+    // Kick off the shrink animation after a short delay
+    setTimeout(() => {
+      bar.style.transition = `width ${TOAST_DURATION}ms linear`;
+      bar.style.width = '0%';
+    }, 80);
+  }
+  setTimeout(dismissToast, TOAST_DURATION);
+});
+
 /* ── Sliding pill tab switcher ── */
 function positionPill() {
   const active = document.querySelector('.sw-btn.active');
@@ -1577,25 +1598,6 @@ document.querySelectorAll('.q-count[data-src]').forEach(badge => {
     })
     .catch(() => { badge.textContent = '— Qs'; });
   });
-/* ── Mock test toast ── */
-const TOAST_DURATION = 8000; // ms before auto-dismiss
-function dismissToast() {
-  const t = document.getElementById('mockToast');
-  if (!t) return;
-  t.style.animation = 'toastOut .35s ease forwards';
-  setTimeout(() => t.remove(), 360);
-}
-window.addEventListener('load', () => {
-  const bar = document.getElementById('toastBar');
-  if (bar) {
-    // Kick off the shrink animation after a short delay
-    setTimeout(() => {
-      bar.style.transition = `width ${TOAST_DURATION}ms linear`;
-      bar.style.width = '0%';
-    }, 80);
-  }
-  setTimeout(dismissToast, TOAST_DURATION);
-});
 </script>
 </body>
 </html>
