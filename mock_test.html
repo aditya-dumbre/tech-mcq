@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🐍 Final Mock Tests — Python Quiz Hub</title>
+<style>
+@font-face{font-family:'Syne';src:local('Futura'),local('Century Gothic'),local('Trebuchet MS');font-weight:400 800;}
+@font-face{font-family:'Mono';src:local('Courier New'),local('Courier'),local('Lucida Console');}
+:root{
+  --bg:#07090f;--s1:#0c0e16;--s2:#10121c;--card:#141824;--border:#1e2438;
+  --text:#e2e8f8;--muted:#4e5a7a;--dim:#7a88aa;
+  --correct:#00c97a;--wrong:#ff4f6e;--accent:#f59e0b;
+  --t1:#38bdf8;--t2:#a78bfa;--t3:#00e5a0;--t4:#fb923c;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% -10%,rgba(56,189,248,.05),transparent),radial-gradient(ellipse 60% 40% at 85% 110%,rgba(167,139,250,.05),transparent);pointer-events:none;z-index:0;}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:44px 24px 100px;}
+
+/* ── TOP SWITCHER ── */
+.test-switcher{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:48px;}
+.switcher-label{font-family:'Mono',monospace;font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+.switcher-track{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:14px;padding:5px;gap:4px;position:relative;}
+.sw-btn{position:relative;display:flex;align-items:center;gap:10px;padding:12px 30px;border-radius:10px;font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:color .25s;z-index:1;letter-spacing:.01em;}
+.sw-btn .sw-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:0;transition:opacity .25s,transform .25s;transform:scale(0);}
+.sw-btn.active .sw-dot{opacity:1;transform:scale(1);}
+.sw-btn.active[data-t="1"]{color:var(--t1);}
+.sw-btn.active[data-t="2"]{color:var(--t2);}
+.sw-btn.active[data-t="3"]{color:var(--t3);}
+.sw-btn.active[data-t="4"]{color:var(--t4);}
+.sw-pill{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:10px;transition:left .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:0;}
+@media(max-width:600px){
+  .sw-btn{padding:10px 16px;font-size:.8rem;}
+}
+
+/* ── TEST META HEADER ── */
+.test-meta{display:flex;align-items:center;gap:16px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 24px;margin-bottom:28px;}
+.test-badge{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;}
+.test-info{flex:1;}
+.test-title{font-size:1.1rem;font-weight:800;letter-spacing:-.01em;}
+.test-sub{font-family:'Mono',monospace;font-size:.7rem;color:var(--muted);margin-top:3px;}
+.test-pills{display:flex;gap:8px;margin-top:8px;}
+.tpill{font-family:'Mono',monospace;font-size:.62rem;padding:3px 10px;border-radius:99px;background:var(--s2);border:1px solid var(--border);color:var(--muted);}
+.tpill.hi{border-color:var(--ac);color:var(--ac);background:color-mix(in srgb,var(--ac) 10%,transparent);}
+
+/* ── QUIZ AREA ── */
+.quiz-area{display:none;}
+.quiz-area.active{display:block;animation:fadeSlide .3s ease;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PROGRESS ── */
+.progress-wrap{margin-bottom:8px;}
+.progress-bar-bg{background:var(--border);border-radius:99px;height:5px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.progress-row{display:flex;justify-content:space-between;font-family:'Mono',monospace;font-size:.72rem;color:var(--muted);margin-top:6px;margin-bottom:24px;}
+
+/* ── ROUND LABEL ── */
+.round-label{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:99px;font-family:'Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px;border:1px solid var(--border);background:var(--s2);color:var(--muted);}
+
+/* ── QUESTION CARD ── */
+.q-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px 26px 22px;margin-bottom:14px;animation:fadeSlide .3s ease;}
+.q-num{font-family:'Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.q-diff{display:inline-block;font-family:'Mono',monospace;font-size:.58rem;padding:2px 8px;border-radius:99px;margin-left:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.diff-basic{background:rgba(0,201,122,.1);color:#00c97a;border:1px solid rgba(0,201,122,.2);}
+.diff-medium{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
+.diff-hard{background:rgba(255,79,110,.1);color:#ff4f6e;border:1px solid rgba(255,79,110,.2);}
+.q-topic{font-family:'Mono',monospace;font-size:.6rem;padding:2px 8px;border-radius:99px;margin-left:6px;color:var(--dim);background:var(--s2);border:1px solid var(--border);}
+.q-text{font-size:1rem;font-weight:600;line-height:1.55;margin-bottom:4px;}
+.q-code{font-family:'Mono',monospace;background:#07090f;border:1px solid var(--border);border-left:3px solid var(--ac,#38bdf8);border-radius:0 8px 8px 0;padding:12px 16px;font-size:.79rem;color:#7dd3fc;margin:12px 0 16px;white-space:pre;overflow-x:auto;line-height:1.6;}
+
+/* ── OPTIONS ── */
+.options{display:grid;gap:8px;margin-top:14px;}
+.opt-btn{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:11px 15px;text-align:left;color:var(--text);font-family:'Syne',sans-serif;font-size:.88rem;cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .15s,background .15s,transform .1s;}
+.opt-btn:hover:not(:disabled){border-color:var(--ac,#38bdf8);background:var(--card);transform:translateX(3px);}
+.opt-key{min-width:26px;height:26px;border-radius:6px;background:var(--border);display:flex;align-items:center;justify-content:center;font-family:'Mono',monospace;font-size:.68rem;font-weight:700;color:var(--muted);transition:background .15s,color .15s;flex-shrink:0;}
+.opt-btn.correct{border-color:var(--correct);background:rgba(0,201,122,.07);}
+.opt-btn.correct .opt-key{background:var(--correct);color:#000;}
+.opt-btn.wrong{border-color:var(--wrong);background:rgba(255,79,110,.07);}
+.opt-btn.wrong .opt-key{background:var(--wrong);color:#fff;}
+.opt-btn:disabled{cursor:default;}
+
+/* ── EXPLANATION ── */
+.expl{margin-top:12px;background:#07090f;border-left:3px solid var(--ac,#38bdf8);border-radius:0 8px 8px 0;padding:12px 16px;font-size:.85rem;line-height:1.65;color:#9aa3be;display:none;animation:fadeSlide .25s ease;}
+.expl.show{display:block;}
+.expl strong{color:var(--ac,#38bdf8);}
+.expl code{font-family:'Mono',monospace;background:#0a0c14;padding:1px 6px;border-radius:4px;font-size:.78em;color:#7dd3fc;}
+
+/* ── NAV BUTTONS ── */
+.q-nav{display:flex;gap:12px;justify-content:flex-end;margin-top:24px;}
+.btn{padding:11px 26px;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;border:none;transition:transform .1s,box-shadow .2s,opacity .2s;}
+.btn:active{transform:scale(.97);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--ac,#38bdf8);color:var(--ac,#38bdf8);}
+.btn-primary{color:#000;box-shadow:0 4px 20px rgba(0,0,0,.3);}
+.btn-primary:hover{box-shadow:0 6px 28px rgba(0,0,0,.4);}
+.btn-primary:disabled{opacity:.4;cursor:default;}
+
+/* ── RESULTS ── */
+.results-area{display:none;}
+.results-area.active{display:block;animation:fadeSlide .3s ease;}
+.score-center{text-align:center;margin-bottom:40px;}
+.score-ring{position:relative;width:180px;height:180px;margin:0 auto 18px;}
+.score-ring svg{transform:rotate(-90deg);}
+.ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-big{font-size:2.8rem;font-weight:800;line-height:1;}
+.ring-denom{font-size:.75rem;color:var(--muted);font-family:'Mono',monospace;margin-top:4px;}
+.verdict{font-size:1.4rem;font-weight:800;margin-bottom:6px;}
+.verdict-sub{color:var(--dim);font-size:.9rem;}
+
+/* ── PHASE STATS GRID ── */
+.phase-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0;}
+@media(max-width:500px){.phase-stats{grid-template-columns:1fr;}}
+.phase-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+.ps-name{font-family:'Mono',monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;}
+.ps-score{font-size:1.5rem;font-weight:800;}
+.ps-bar{height:4px;background:var(--border);border-radius:99px;margin-top:8px;overflow:hidden;}
+.ps-fill{height:100%;border-radius:99px;transition:width .8s .2s;}
+
+/* ── REVIEW ── */
+.review-sec-head{font-size:1rem;font-weight:700;margin:32px 0 14px;display:flex;align-items:center;gap:10px;}
+.review-sec-head span{flex:1;height:1px;background:var(--border);}
+.rev-item{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:10px;}
+.rev-item.r-ok{border-color:rgba(0,201,122,.3);}
+.rev-item.r-bad{border-color:rgba(255,79,110,.3);}
+.rev-top{display:flex;align-items:flex-start;gap:12px;}
+.rev-badge{min-width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
+.r-ok .rev-badge{background:rgba(0,201,122,.18);color:var(--correct);}
+.r-bad .rev-badge{background:rgba(255,79,110,.18);color:var(--wrong);}
+.rev-q{font-weight:600;font-size:.9rem;line-height:1.45;}
+.rev-q code{font-family:'Mono',monospace;background:#0a0c14;padding:1px 5px;border-radius:4px;font-size:.78em;color:#7dd3fc;}
+.rev-detail{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:.82rem;color:var(--muted);line-height:1.6;}
+.lbl{font-weight:700;margin-right:4px;}
+.ya{color:var(--wrong);}.ca{color:var(--correct);}
+.expl-t{color:#8a93b0;margin-top:4px;}
+.expl-t strong{color:var(--accent);font-weight:600;}
+.expl-t code{font-family:'Mono',monospace;background:#0a0c14;padding:1px 5px;border-radius:4px;font-size:.8em;color:#7dd3fc;}
+.results-nav{display:flex;gap:12px;justify-content:center;margin-top:36px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP TAB SWITCHER -->
+  <div class="test-switcher">
+    <div class="switcher-label">Final Mock Tests</div>
+    <div class="switcher-track" id="switcher">
+      <div id="swPill" class="sw-pill"></div>
+      <button class="sw-btn active" data-t="1" id="sw1" onclick="switchTest(1)"><span class="sw-dot"></span>Test 1</button>
+      <button class="sw-btn" data-t="2" id="sw2" onclick="switchTest(2)"><span class="sw-dot"></span>Test 2</button>
+      <button class="sw-btn" data-t="3" id="sw3" onclick="switchTest(3)"><span class="sw-dot"></span>Test 3</button>
+      <button class="sw-btn" data-t="4" id="sw4" onclick="switchTest(4)"><span class="sw-dot"></span>Test 4</button>
+    </div>
+  </div>
+
+  <!-- FOUR TEST PANELS -->
+  <div id="tp1" class="test-panel active" style="--ac:var(--t1)">
+    <div class="test-meta">
+      <div class="test-badge" style="background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.2);">📝</div>
+      <div class="test-info">
+        <div class="test-title">Mock Test 1</div>
+        <div class="test-sub">Foundations · Core OOP · NumPy · Pandas · Exception Handling</div>
+        <div class="test-pills">
+          <span class="tpill hi" style="--ac:var(--t1)">20 Questions</span>
+          <span class="tpill">10 Basic · 5 Medium · 5 Hard</span>
+          <span class="tpill">Timed · Full Review</span>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-area active" id="qa1">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="pb1" style="width:5%;background:linear-gradient(90deg,var(--t1),#0ea5e9)"></div></div>
+        <div class="progress-row"><span id="pt1">Question 1 of 20</span><span id="st1">Score: 0</span></div>
+      </div>
+      <div class="round-label" id="rl1">🟢 Round 1 — Foundations</div>
+      <div id="qarea1"></div>
+      <div class="q-nav">
+        <button class="btn btn-ghost" id="bbtn1" onclick="prev(1)" style="display:none">← Back</button>
+        <button class="btn btn-primary" id="nbtn1" onclick="next(1)" style="background:linear-gradient(135deg,var(--t1),#0ea5e9)" disabled>Next →</button>
+      </div>
+    </div>
+    <div class="results-area" id="ra1">
+      <div class="score-center">
+        <div class="score-ring">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="78" fill="none" stroke="#1e2438" stroke-width="12"/>
+            <circle id="ring1" cx="90" cy="90" r="78" fill="none" stroke="url(#rg1)" stroke-width="12" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+            <defs><linearGradient id="rg1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0ea5e9"/></linearGradient></defs>
+          </svg>
+          <div class="ring-text"><div class="ring-big" id="rb1">—</div><div class="ring-denom">/ 20</div></div>
+        </div>
+        <div class="verdict" id="vrd1"></div>
+        <div class="verdict-sub" id="vsub1"></div>
+      </div>
+      <div class="phase-stats" id="ps1"></div>
+      <div class="review-sec-head">📋 Full Answer Analysis <span></span></div>
+      <div id="rvlist1"></div>
+      <div class="results-nav">
+        <button class="btn btn-ghost" onclick="retake(1)">↺ Retake Test</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tp2" class="test-panel" style="--ac:var(--t2);display:none">
+    <div class="test-meta">
+      <div class="test-badge" style="background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.2);">📝</div>
+      <div class="test-info">
+        <div class="test-title">Mock Test 2</div>
+        <div class="test-sub">Strings · OOP · Pandas · Flask · Generator · GIL · MRO</div>
+        <div class="test-pills">
+          <span class="tpill hi" style="--ac:var(--t2)">20 Questions</span>
+          <span class="tpill">10 Basic · 5 Medium · 5 Hard</span>
+          <span class="tpill">Timed · Full Review</span>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-area active" id="qa2">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="pb2" style="width:5%;background:linear-gradient(90deg,var(--t2),#8b5cf6)"></div></div>
+        <div class="progress-row"><span id="pt2">Question 1 of 20</span><span id="st2">Score: 0</span></div>
+      </div>
+      <div class="round-label" id="rl2">🟢 Round 1 — Foundations</div>
+      <div id="qarea2"></div>
+      <div class="q-nav">
+        <button class="btn btn-ghost" id="bbtn2" onclick="prev(2)" style="display:none">← Back</button>
+        <button class="btn btn-primary" id="nbtn2" onclick="next(2)" style="background:linear-gradient(135deg,var(--t2),#8b5cf6)" disabled>Next →</button>
+      </div>
+    </div>
+    <div class="results-area" id="ra2">
+      <div class="score-center">
+        <div class="score-ring">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="78" fill="none" stroke="#1e2438" stroke-width="12"/>
+            <circle id="ring2" cx="90" cy="90" r="78" fill="none" stroke="url(#rg2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+            <defs><linearGradient id="rg2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs>
+          </svg>
+          <div class="ring-text"><div class="ring-big" id="rb2">—</div><div class="ring-denom">/ 20</div></div>
+        </div>
+        <div class="verdict" id="vrd2"></div>
+        <div class="verdict-sub" id="vsub2"></div>
+      </div>
+      <div class="phase-stats" id="ps2"></div>
+      <div class="review-sec-head">📋 Full Answer Analysis <span></span></div>
+      <div id="rvlist2"></div>
+      <div class="results-nav">
+        <button class="btn btn-ghost" onclick="retake(2)">↺ Retake Test</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tp3" class="test-panel" style="--ac:var(--t3);display:none">
+    <div class="test-meta">
+      <div class="test-badge" style="background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.2);">📝</div>
+      <div class="test-info">
+        <div class="test-title">Mock Test 3</div>
+        <div class="test-sub">File Handling · Tuples · OOP · NumPy · Seaborn · Web Scraping</div>
+        <div class="test-pills">
+          <span class="tpill hi" style="--ac:var(--t3)">20 Questions</span>
+          <span class="tpill">10 Basic · 5 Medium · 5 Hard</span>
+          <span class="tpill">Timed · Full Review</span>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-area active" id="qa3">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="pb3" style="width:5%;background:linear-gradient(90deg,var(--t3),#10b981)"></div></div>
+        <div class="progress-row"><span id="pt3">Question 1 of 20</span><span id="st3">Score: 0</span></div>
+      </div>
+      <div class="round-label" id="rl3">🟢 Round 1 — Foundations</div>
+      <div id="qarea3"></div>
+      <div class="q-nav">
+        <button class="btn btn-ghost" id="bbtn3" onclick="prev(3)" style="display:none">← Back</button>
+        <button class="btn btn-primary" id="nbtn3" onclick="next(3)" style="background:linear-gradient(135deg,var(--t3),#10b981)" disabled>Next →</button>
+      </div>
+    </div>
+    <div class="results-area" id="ra3">
+      <div class="score-center">
+        <div class="score-ring">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="78" fill="none" stroke="#1e2438" stroke-width="12"/>
+            <circle id="ring3" cx="90" cy="90" r="78" fill="none" stroke="url(#rg3)" stroke-width="12" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+            <defs><linearGradient id="rg3" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#00e5a0"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
+          </svg>
+          <div class="ring-text"><div class="ring-big" id="rb3">—</div><div class="ring-denom">/ 20</div></div>
+        </div>
+        <div class="verdict" id="vrd3"></div>
+        <div class="verdict-sub" id="vsub3"></div>
+      </div>
+      <div class="phase-stats" id="ps3"></div>
+      <div class="review-sec-head">📋 Full Answer Analysis <span></span></div>
+      <div id="rvlist3"></div>
+      <div class="results-nav">
+        <button class="btn btn-ghost" onclick="retake(3)">↺ Retake Test</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tp4" class="test-panel" style="--ac:var(--t4);display:none">
+    <div class="test-meta">
+      <div class="test-badge" style="background:rgba(251,146,60,.12);border:1px solid rgba(251,146,60,.2);">📝</div>
+      <div class="test-info">
+        <div class="test-title">Mock Test 4</div>
+        <div class="test-sub">Django · SQLite · Generators · Regex · Mutable Defaults · Deep Copy</div>
+        <div class="test-pills">
+          <span class="tpill hi" style="--ac:var(--t4)">20 Questions</span>
+          <span class="tpill">10 Basic · 5 Medium · 5 Hard</span>
+          <span class="tpill">Timed · Full Review</span>
+        </div>
+      </div>
+    </div>
+    <div class="quiz-area active" id="qa4">
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="pb4" style="width:5%;background:linear-gradient(90deg,var(--t4),#f97316)"></div></div>
+        <div class="progress-row"><span id="pt4">Question 1 of 20</span><span id="st4">Score: 0</span></div>
+      </div>
+      <div class="round-label" id="rl4">🟢 Round 1 — Foundations</div>
+      <div id="qarea4"></div>
+      <div class="q-nav">
+        <button class="btn btn-ghost" id="bbtn4" onclick="prev(4)" style="display:none">← Back</button>
+        <button class="btn btn-primary" id="nbtn4" onclick="next(4)" style="background:linear-gradient(135deg,var(--t4),#f97316)" disabled>Next →</button>
+      </div>
+    </div>
+    <div class="results-area" id="ra4">
+      <div class="score-center">
+        <div class="score-ring">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="78" fill="none" stroke="#1e2438" stroke-width="12"/>
+            <circle id="ring4" cx="90" cy="90" r="78" fill="none" stroke="url(#rg4)" stroke-width="12" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+            <defs><linearGradient id="rg4" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#f97316"/></linearGradient></defs>
+          </svg>
+          <div class="ring-text"><div class="ring-big" id="rb4">—</div><div class="ring-denom">/ 20</div></div>
+        </div>
+        <div class="verdict" id="vrd4"></div>
+        <div class="verdict-sub" id="vsub4"></div>
+      </div>
+      <div class="phase-stats" id="ps4"></div>
+      <div class="review-sec-head">📋 Full Answer Analysis <span></span></div>
+      <div id="rvlist4"></div>
+      <div class="results-nav">
+        <button class="btn btn-ghost" onclick="retake(4)">↺ Retake Test</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end wrap -->
+
+<script>
+/* ═══════════════════════════════════════
+   QUESTION DATA
+═══════════════════════════════════════ */
+const TESTS = {
+
+1: [
+  // Basic (0-9)
+  {phase:0,diff:'basic',topic:'Lists',text:'What will this code print?',
+   code:`x = [1, 2, 3]\ny = x\ny.append(4)\nprint(x)`,
+   opts:['[1, 2, 3]','[1, 2, 3, 4]','[4, 1, 2, 3]','TypeError: list is referenced twice'],
+   ans:1,expl:`<code>y = x</code> does <strong>not</strong> copy the list — both names point to the same object. Appending via <code>y</code> mutates the same list that <code>x</code> references, so <code>print(x)</code> shows <strong>[1, 2, 3, 4]</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Tuples',text:'Which statement about Python tuples is correct?',
+   opts:["A tuple's elements can be reassigned using index notation","Tuples are faster than lists only when they contain strings","A single-element tuple must include a trailing comma","Tuples preserve insertion order but do not support indexing"],
+   ans:2,expl:`<code>(42,)</code> — the trailing comma is mandatory. Without it, <code>(42)</code> is just a parenthesised integer. Tuples do support indexing, and elements cannot be reassigned.`},
+
+  {phase:0,diff:'basic',topic:'Control Flow',text:"What does the 'pass' keyword do in Python?",
+   opts:["Skips the current loop iteration, like 'continue'","Exits the current function and returns None","Acts as a syntactic no-operation placeholder","Suppresses any exception raised inside the block"],
+   ans:2,expl:`<code>pass</code> is a <strong>no-op</strong> — it does nothing but satisfies Python's requirement for a non-empty block. <code>continue</code> skips iterations, <code>return</code> exits a function.`},
+
+  {phase:0,diff:'basic',topic:'Dictionaries',text:'What is the output?',
+   code:`d = {'a': 1, 'b': 2}\nd.update({'b': 99, 'c': 3})\nprint(d)`,
+   opts:["{'a': 1, 'b': 2, 'c': 3}","{'a': 1, 'b': 99, 'c': 3}","{'a': 1, 'b': [2, 99], 'c': 3}","KeyError: 'b' already exists"],
+   ans:1,expl:`<code>dict.update()</code> merges the argument into the dictionary. Existing keys are <strong>overwritten</strong>; new keys are added. So <code>'b'</code> becomes <code>99</code> and <code>'c': 3</code> is inserted.`},
+
+  {phase:0,diff:'basic',topic:'Functions',text:'Which built-in returns the unique integer identity of a Python object?',
+   opts:['hash(obj) — returns a fixed identifier tied to memory','type(obj) — returns the object\'s internal type reference','id(obj) — returns an integer unique to this object\'s lifetime','vars(obj) — returns a mapping of the object\'s attributes'],
+   ans:2,expl:`<code>id(obj)</code> returns a unique integer tied to the object's memory address for its lifetime. <code>hash()</code> is for hash-table lookup, <code>type()</code> returns the class, <code>vars()</code> returns the instance dict.`},
+
+  {phase:0,diff:'basic',topic:'Python Basics',text:'What will this snippet output?',
+   code:`print(type(5 / 2))\nprint(type(5 // 2))`,
+   opts:['int then int','float then float','float then int','int then float'],
+   ans:2,expl:`<code>/</code> (true division) always returns a <strong>float</strong> — even when both operands are integers. <code>//</code> (floor division) truncates and returns an <strong>int</strong> when both operands are integers.`},
+
+  {phase:0,diff:'basic',topic:'Strings',text:"What does 'hello'[::-1] evaluate to?",
+   opts:["'hello' — step -1 has no effect","'olleh' — step -1 traverses in reverse","'h' — negative step extracts first char only","'ello' — drops first character and reverses"],
+   ans:1,expl:`<code>[::-1]</code> uses a step of <code>-1</code>, which starts at the last character and walks backward to the first. The result is the string reversed: <strong>'olleh'</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Control Flow',text:'What will this print?',
+   code:`for i in range(3):\n    print(i, end=' ')\nelse:\n    print('done')`,
+   opts:["0 1 2 done","0 1 2 (no 'done' — else needs an if)","done (else runs before loop body)","0 1 2 (else skipped because range completed)"],
+   ans:0,expl:`A <code>for</code> loop's <code>else</code> clause runs whenever the loop <strong>completes normally</strong> (not via <code>break</code>). Since <code>range(3)</code> finishes without a break, <code>'done'</code> is printed after <code>0 1 2</code>.`},
+
+  {phase:0,diff:'basic',topic:'Exception Handling',text:'Which exception is raised when you access a missing key with bracket notation on a dict?',
+   opts:['IndexError — raised for any out-of-range lookup','TypeError — raised when the key type is incompatible','KeyError — raised specifically for missing dictionary keys','ValueError — raised when the associated value is invalid'],
+   ans:2,expl:`<code>d['missing']</code> raises a <strong>KeyError</strong>. Use <code>d.get('missing')</code> to return <code>None</code> instead, or <code>d.get('missing', default)</code> for a fallback.`},
+
+  {phase:0,diff:'basic',topic:'OOP',text:'What does __init__ represent in a Python class?',
+   opts:['A destructor invoked when the object is garbage collected','An initializer called automatically when a new instance is created','A class-level factory method replacing the default constructor','A special method that runs only when the class is defined'],
+   ans:1,expl:`<code>__init__</code> is the <strong>initializer</strong> — Python calls it automatically right after creating a new instance with <code>ClassName()</code>. It sets up the instance's attributes. The destructor is <code>__del__</code>.`},
+
+  // Medium (10-14)
+  {phase:1,diff:'medium',topic:'NumPy',text:'What is the output of this code?',
+   code:`import numpy as np\na = np.array([1, 2, 3])\nb = a * 2 + 1\nprint(b)`,
+   opts:['[2 4 6]','[3 5 7]','[1 4 7]','[2 5 8]'],
+   ans:1,expl:`NumPy operations are <strong>element-wise</strong>. Each element is multiplied by 2 then 1 is added: 1×2+1=<strong>3</strong>, 2×2+1=<strong>5</strong>, 3×2+1=<strong>7</strong> → <code>[3 5 7]</code>.`},
+
+  {phase:1,diff:'medium',topic:'Lambda',text:'What does the following lambda return when called with (3, 4)?',
+   code:`f = lambda x, y: x ** 2 + y ** 2`,
+   opts:['7 (sum of bases)','12 (product of bases)','25 (sum of squares)','49 (square of sum)'],
+   ans:2,expl:`<code>3**2 + 4**2 = 9 + 16 = <strong>25</strong></code>. The lambda computes the sum of squares of both arguments — recognise this as the Pythagorean formula.`},
+
+  {phase:1,diff:'medium',topic:'Pandas',text:'What will this Pandas snippet produce?',
+   code:`import pandas as pd\ndf = pd.DataFrame({'A': [1,2,3], 'B': [4,5,6]})\nprint(df[df['A'] > 1]['B'].sum())`,
+   opts:['9 (B minus first)','10 (B where A >= 1)','11 (B where A > 1)','15 (total B)'],
+   ans:2,expl:`<code>df['A'] > 1</code> masks rows where A=2 and A=3. The corresponding B values are <code>5</code> and <code>6</code>. <code>.sum()</code> → <strong>11</strong>.`},
+
+  {phase:1,diff:'medium',topic:'OOP',text:'Which combination correctly defines a class method?',
+   opts:['@staticmethod above def method(cls)','@classmethod above def method(cls)','@classmethod above def method(self)','@property above def method(cls)'],
+   ans:1,expl:`<code>@classmethod</code> must be combined with <code>cls</code> as the first parameter — Python automatically passes the class object as <code>cls</code>. <code>@staticmethod</code> receives no implicit first argument.`},
+
+  {phase:1,diff:'medium',topic:'Python Basics',text:'What will this code output?',
+   code:`print(bool([]), bool([0]), bool(''), bool('0'))`,
+   opts:['False False False False','False True False True','True True False False','False False True True'],
+   ans:1,expl:`Empty containers (<code>[]</code>, <code>''</code>) are <strong>falsy</strong>. Non-empty containers — even if containing a zero-like value — are <strong>truthy</strong>. So <code>bool([0])</code>=True, <code>bool('0')</code>=True.`},
+
+  // Hard (15-19)
+  {phase:2,diff:'hard',topic:'Exception Handling',text:'What will this code output?',
+   code:`try:\n    x = int("abc")\nexcept ValueError as e:\n    print("caught")\nfinally:\n    print("always")`,
+   opts:['caught (finally skipped when handled)','always (except swallows before finally)','caught then always on separate lines','always then caught — finally runs first'],
+   ans:2,expl:`<code>int("abc")</code> raises <code>ValueError</code>, caught by <code>except</code> — prints <strong>"caught"</strong>. Then <code>finally</code> always runs — prints <strong>"always"</strong>. Order is always: try → except → finally.`},
+
+  {phase:2,diff:'hard',topic:'Functions',text:'What is the output?',
+   code:`x = 10\ndef foo():\n    x = 20\n    def bar():\n        nonlocal x\n        x += 5\n    bar()\n    print(x)\nfoo()\nprint(x)`,
+   opts:['20 then 15','25 then 10','25 then 25','20 then 10'],
+   ans:1,expl:`<code>nonlocal x</code> in <code>bar</code> binds to <code>foo</code>'s local <code>x=20</code>. <code>bar()</code> sets it to 25. <code>foo</code> prints <strong>25</strong>. The global <code>x=10</code> is untouched — prints <strong>10</strong>.`},
+
+  {phase:2,diff:'hard',topic:'OOP',text:"Which statement correctly describes Python's MRO?",
+   opts:['Searches base classes depth-first, left-to-right','Uses C3 linearization to guarantee a consistent, conflict-free MRO','Raises TypeError when a class has more than one direct parent','Resolves methods right-to-left, giving priority to last parent listed'],
+   ans:1,expl:`Python uses the <strong>C3 linearization</strong> algorithm (also called C3 superclass linearization) to compute a consistent MRO. It guarantees monotonicity and local precedence order, preventing the diamond problem.`},
+
+  {phase:2,diff:'hard',topic:'OOP / Functions',text:"What does this snippet print when say('hi') is called?",
+   code:`def repeat(n):\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            for _ in range(n):\n                func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@repeat(3)\ndef say(msg):\n    print(msg)\nsay("hi")`,
+   opts:['hi (calls once)','hi hi hi (loops 3 times)','[\'hi\', \'hi\', \'hi\'] (collects list)','TypeError: unexpected keyword argument'],
+   ans:1,expl:`<code>@repeat(3)</code> is a parametrized decorator. <code>repeat(3)</code> returns <code>decorator</code>, which wraps <code>say</code>. Calling <code>say("hi")</code> runs <code>wrapper</code>, which loops <code>range(3)</code> times printing <strong>hi</strong> each time.`},
+
+  {phase:2,diff:'hard',topic:'Lists',text:'What will this output?',
+   code:`a = [1, 2, 3]\nb = a[:]\nb[0] = 99\nprint(a[0], b[0])`,
+   opts:['99 and 99 (slice shares elements)','1 and 99 (slice is a new list)','99 and 1 (original modified)','1 and 1 (immutable ints prevent change)'],
+   ans:1,expl:`<code>a[:]</code> creates a <strong>shallow copy</strong> — a new list object with the same element references. Reassigning <code>b[0] = 99</code> changes which integer <code>b[0]</code> points to, leaving <code>a[0]</code> still pointing to <code>1</code>.`}
+],
+
+2: [
+  // Basic (0-9)
+  {phase:0,diff:'basic',topic:'Strings',text:'What is the output of this code?',
+   code:`s = 'python'\nprint(s[1:4])`,
+   opts:["'pyt' (chars at 0,1,2 — stop inclusive)","'yth' (chars at 1,2,3 — stop exclusive)","'thon' (starts from 't')","'hon' (half string from middle)"],
+   ans:1,expl:`Slicing <code>s[1:4]</code> extracts indices 1, 2, 3 — stop index is <strong>exclusive</strong>. Characters at positions 1='y', 2='t', 3='h' → <strong>'yth'</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Python Basics',text:'Which of these will raise a TypeError at runtime?',
+   code:`A: 5 + 3\nB: '5' + '3'\nC: '5' * 3\nD: '5' + 3`,
+   opts:['A: 5 + 3','B: \'5\' + \'3\'','C: \'5\' * 3','D: \'5\' + 3'],
+   ans:3,expl:`Python does <strong>not</strong> implicitly coerce str and int. <code>'5' + 3</code> raises <code>TypeError: can only concatenate str (not "int") to str</code>. String repetition <code>'5' * 3 = '555'</code> is valid.`},
+
+  {phase:0,diff:'basic',topic:'Lists',text:"What does the 'in' operator return when searching a list?",
+   opts:['The integer index of the first matching element','A boolean True or False based on membership','A filtered list of all elements that match','The count of times the element appears'],
+   ans:1,expl:`The <code>in</code> operator is a <strong>membership test</strong> — it returns <code>True</code> or <code>False</code>. Use <code>list.index()</code> for the position, <code>list.count()</code> for frequency.`},
+
+  {phase:0,diff:'basic',topic:'Python Basics',text:'What is the output?',
+   code:`x = True\ny = False\nprint(x and not y)`,
+   opts:['False','True','None','TypeError'],
+   ans:1,expl:`<code>not y</code> flips <code>False</code> to <code>True</code>. Then <code>True and True</code> evaluates to <strong>True</strong>. Boolean operators return one of the operand values, not a new object.`},
+
+  {phase:0,diff:'basic',topic:'OOP',text:'What is the effect of prefixing an attribute with double underscore (__attr)?',
+   opts:['Truly private — cannot be accessed outside the class','Triggers name mangling, renaming it to _ClassName__attr','Makes the attribute shared across all instances','Raises AttributeError if accessed without a getter'],
+   ans:1,expl:`Double-underscore prefix triggers <strong>name mangling</strong>: Python renames <code>__attr</code> to <code>_ClassName__attr</code> internally. This prevents accidental overriding in subclasses but doesn't enforce true privacy — it can still be accessed via the mangled name.`},
+
+  {phase:0,diff:'basic',topic:'NumPy',text:'Which NumPy function creates an array of all zeros?',
+   opts:['np.empty(5) — allocates memory, zero by default','np.zeros(5) — returns n zero-valued floats','np.full(5, 0) — only for integers','np.ones(5) - 1 — idiomatic way'],
+   ans:1,expl:`<code>np.zeros(5)</code> explicitly initialises all elements to <strong>0.0</strong>. <code>np.empty(5)</code> allocates uninitialized memory — values are garbage, not guaranteed zeros.`},
+
+  {phase:0,diff:'basic',topic:'Lists / Strings',text:'What happens when you call list() on a string?',
+   opts:['Returns a list with the entire string as one element','Raises TypeError — strings not iterable into lists','Returns a list of individual characters','Returns Unicode code points for each character'],
+   ans:2,expl:`Strings are iterable — <code>list('hi')</code> iterates character by character, producing <strong>['h', 'i']</strong>. For code points, use <code>[ord(c) for c in s]</code>.`},
+
+  {phase:0,diff:'basic',topic:'Lists',text:'What does this code print?',
+   code:`nums = [4, 1, 7, 2]\nprint(sorted(nums)[-1])`,
+   opts:['4 — sorted returns original order; -1 picks last inserted','7 — sorted ascending; -1 picks largest','2 — sorted reverses; -1 picks smallest','1 — sorted is stable; -1 picks originally-last'],
+   ans:1,expl:`<code>sorted()</code> returns a <strong>new</strong> list in ascending order: <code>[1, 2, 4, 7]</code>. Index <code>-1</code> picks the last element — the largest — which is <strong>7</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Exception Handling',text:'Which exception-handling structure is syntactically invalid?',
+   opts:['try / except / else / finally (all four together)','try / except Exception / except TypeError (multiple excepts)','try / else (else without any except clause)','try / except / finally (finally after except)'],
+   ans:2,expl:`An <code>else</code> clause after <code>try</code> is only valid when there is at least one <code>except</code> clause. <code>try / else</code> without <code>except</code> is a <strong>SyntaxError</strong>.`},
+
+  {phase:0,diff:'basic',topic:'OOP',text:"What is the purpose of 'self' in a Python instance method?",
+   opts:['Refers to the class itself — equivalent to using the class name','A keyword enforcing strict type checking','Refers to the current instance, giving access to its attributes','An implicit return value injected after each call'],
+   ans:2,expl:`<code>self</code> is the <strong>first parameter</strong> of every instance method — Python automatically passes the calling instance as this argument. It gives the method access to the instance's attributes and other methods.`},
+
+  // Medium (10-14)
+  {phase:1,diff:'medium',topic:'Pandas',text:'What will this produce?',
+   code:`import pandas as pd\ns = pd.Series([10, 20, 30], index=['a','b','c'])\nprint(s['b':'c'])`,
+   opts:["b 20 c 30 (label slicing inclusive both ends)","b 20 (label slicing excludes stop)","c 30 (starts from stop label only)","KeyError: label slicing not supported"],
+   ans:0,expl:`Pandas label-based slicing is <strong>inclusive on both ends</strong> — unlike integer slicing. <code>s['b':'c']</code> returns both b=20 and c=30.`},
+
+  {phase:1,diff:'medium',topic:'Web Development',text:'What does this Flask snippet define?',
+   code:`from flask import Flask\napp = Flask(__name__)\n\n@app.route('/hello')\ndef hello():\n    return 'Hello, World!'`,
+   opts:['A middleware intercepting all requests','A URL route mapping GET /hello to hello()','A class-based view under /hello namespace','An async handler requiring async def'],
+   ans:1,expl:`<code>@app.route('/hello')</code> registers a <strong>URL route</strong> — when a GET request arrives at <code>/hello</code>, Flask calls <code>hello()</code> and returns its result as the HTTP response body.`},
+
+  {phase:1,diff:'medium',topic:'Generators',text:'What is the output?',
+   code:`def gen():\n    for i in range(3):\n        yield i * i\n\ng = gen()\nprint(next(g), next(g))`,
+   opts:['0 1 (first two squares: 0²=0, 1²=1)','0 4 (printed with space between)','1 4 (generator skips 0)','0 2 (yields index, not squares)'],
+   ans:0,expl:`<code>next(g)</code> runs the generator to the first <code>yield</code>: <code>0*0=0</code>. Second <code>next(g)</code> resumes to the next yield: <code>1*1=1</code>. <code>print(0, 1)</code> outputs <strong>0 1</strong>.`},
+
+  {phase:1,diff:'medium',topic:'Pandas',text:'What is the key difference between loc and iloc in Pandas?',
+   opts:['loc is faster; iloc is label-based and slower','loc selects by label names; iloc by integer position','loc operates on columns only; iloc on rows only','loc returns a copy; iloc always returns a view'],
+   ans:1,expl:`<code>loc</code> uses <strong>label-based indexing</strong> (row/column names). <code>iloc</code> uses <strong>integer-position indexing</strong> (0-based). They differ especially when the index is not the default integer range.`},
+
+  {phase:1,diff:'medium',topic:'OOP',text:'What does the @property decorator do?',
+   opts:['Converts method to a class method shared by all instances','Allows method to be accessed like an attribute without ()','Prevents method from being overridden in subclasses','Caches the return value after the first call'],
+   ans:1,expl:`<code>@property</code> makes a method callable without parentheses — <code>obj.fahrenheit</code> instead of <code>obj.fahrenheit()</code>. It creates a <strong>read-only computed attribute</strong> unless a setter is also defined.`},
+
+  // Hard (15-19)
+  {phase:2,diff:'hard',topic:'Lists / Strings',text:'What is the output?',
+   code:`x = [0, 1, 2, 3, 4]\nprint(x[::2], x[1::2])`,
+   opts:['[0, 2, 4] and [1, 3]','[0, 1, 2] and [3, 4]','[2, 4] and [1, 3]','[0, 2, 4] and [0, 2, 4]'],
+   ans:0,expl:`<code>x[::2]</code> starts at 0, steps by 2 → indices 0,2,4 → <strong>[0,2,4]</strong>. <code>x[1::2]</code> starts at 1, steps by 2 → indices 1,3 → <strong>[1,3]</strong>.`},
+
+  {phase:2,diff:'hard',topic:'GIL',text:"Which statement about Python's GIL is most accurate?",
+   opts:['The GIL allows threads to run Python bytecode in parallel','The GIL ensures only one thread executes bytecode at a time','The GIL is released by multiprocessing, enabling true threading','The GIL only blocks I/O-bound threads; CPU-bound unaffected'],
+   ans:1,expl:`The <strong>Global Interpreter Lock (GIL)</strong> is a mutex that allows only one thread to execute Python bytecode at a time, preventing true CPU parallelism. I/O-bound threads release the GIL while waiting — CPU-bound threads are most affected.`},
+
+  {phase:2,diff:'hard',topic:'OOP / MRO',text:'What will this snippet print?',
+   code:`class A:\n    def method(self): return 'A'\nclass B(A):\n    def method(self): return 'B'\nclass C(A):\n    def method(self): return 'C'\nclass D(B, C): pass\n\nprint(D().method())`,
+   opts:["'A' (base class always wins)","'B' (MRO: D→B→C→A)","'C' (rightmost parent wins)","'D' (Python auto-generates method)"],
+   ans:1,expl:`C3 MRO for D: <strong>D → B → C → A</strong>. Python finds <code>method()</code> first in <code>B</code> and returns <strong>'B'</strong>. This is the diamond inheritance resolution — leftmost parent in the class definition takes precedence.`},
+
+  {phase:2,diff:'hard',topic:'Python Basics',text:'What is the result?',
+   code:`print(bool([]), bool([0]), bool(''), bool('0'))`,
+   opts:['False False False False','False True False True','True True False False','False False True True'],
+   ans:1,expl:`Truthiness is about <strong>emptiness</strong>, not value. <code>[]</code> (empty list) → False. <code>[0]</code> (non-empty) → True. <code>''</code> (empty string) → False. <code>'0'</code> (non-empty) → True.`},
+
+  {phase:2,diff:'hard',topic:'Pandas',text:'What does this Pandas transform call do?',
+   code:`df['sales'] = df.groupby('category')['sales'].transform('mean')`,
+   opts:['Returns one row per group','Replaces each value with its group mean, keeping row count','Computes grand mean broadcast to every row','Raises AttributeError: transform() rejects string names'],
+   ans:1,expl:`<code>transform('mean')</code> computes the group mean but <strong>broadcasts it back</strong> to every row in the original group — preserving the DataFrame shape. Unlike <code>agg</code>, the output index aligns with the input.`}
+],
+
+3: [
+  // Basic (0-9)
+  {phase:0,diff:'basic',topic:'File Handling',text:'What is the correct way to open a file for writing in Python?',
+   opts:["open('file.txt', 'r')","open('file.txt', 'w')","open('file.txt', 'a+')","open('file.txt', 'x+')"],
+   ans:1,expl:`Mode <code>'w'</code> opens for <strong>writing</strong> — creating the file if it doesn't exist and truncating it if it does. <code>'r'</code> is read-only, <code>'a'</code> appends, <code>'x'</code> creates exclusively (fails if file exists).`},
+
+  {phase:0,diff:'basic',topic:'Tuples',text:'What does this print?',
+   code:`t = (1, 2, 3)\na, *b, c = t\nprint(b)`,
+   opts:['[2]','(2,)','2','[1, 2]'],
+   ans:0,expl:`Extended unpacking with <code>*b</code> collects all remaining elements into a <strong>list</strong>. With <code>a=1</code> and <code>c=3</code> assigned, the middle elements (just <code>2</code>) go into <code>b</code> as <strong>[2]</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Tuples',text:'What is the key difference between a list and a tuple?',
+   opts:['Lists allow duplicates; tuples prevent duplicates','Tuples are mutable; lists are immutable','Lists are mutable; tuples are immutable once created','Tuples can only hold numeric data types'],
+   ans:2,expl:`The fundamental distinction is <strong>mutability</strong>: lists can be changed after creation (append, remove, reassign elements), while tuples are <strong>immutable</strong> — their elements cannot be changed.`},
+
+  {phase:0,diff:'basic',topic:'Strings',text:"What will this print?",
+   code:`print('ha' * 3)`,
+   opts:['ha ha ha','hahaha','ha3',"['ha', 'ha', 'ha']"],
+   ans:1,expl:`String repetition <code>'ha' * 3</code> concatenates the string with itself 3 times → <strong>'hahaha'</strong>. There are no separators — it's pure concatenation.`},
+
+  {phase:0,diff:'basic',topic:'Data Visualization',text:'Which Matplotlib function renders and displays the current figure?',
+   opts:['plt.render()','plt.draw()','plt.show()','plt.display()'],
+   ans:2,expl:`<code>plt.show()</code> renders all pending figures and displays them. Without it, plots may not appear in non-interactive environments. <code>plt.draw()</code> exists but is used for updating interactive plots.`},
+
+  {phase:0,diff:'basic',topic:'Lambda / Filter',text:'What does this code produce?',
+   code:`nums = [1, 2, 3, 4, 5]\nresult = list(filter(lambda x: x % 2 == 0, nums))\nprint(result)`,
+   opts:['[1, 3, 5]','[2, 4]','[False, True, False, True, False]','[]'],
+   ans:1,expl:`<code>filter</code> keeps elements where the lambda returns truthy. <code>x % 2 == 0</code> is True for even numbers: <strong>2 and 4</strong>. The odd numbers 1, 3, 5 are filtered out.`},
+
+  {phase:0,diff:'basic',topic:'Libraries',text:'What type does json.loads() return when given a JSON object string?',
+   opts:['str','list','dict','tuple'],
+   ans:2,expl:`<code>json.loads()</code> parses a JSON string. A JSON object (<code>{...}</code>) becomes a Python <strong>dict</strong>. A JSON array (<code>[...]</code>) becomes a list.`},
+
+  {phase:0,diff:'basic',topic:'Functions',text:'What will this print?',
+   code:`x = 5\ndef change():\n    x = 10\nchange()\nprint(x)`,
+   opts:['10','5','None','UnboundLocalError'],
+   ans:1,expl:`Without the <code>global</code> keyword, assigning <code>x = 10</code> inside <code>change()</code> creates a <strong>new local variable</strong> — it doesn't modify the global <code>x</code>. So <code>print(x)</code> still outputs <strong>5</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Databases',text:'In database terminology, what does CRUD stand for?',
+   opts:['Copy, Retrieve, Update, Delete','Create, Read, Update, Delete','Connect, Run, Undo, Deploy','Check, Read, Upsert, Drop'],
+   ans:1,expl:`<strong>CRUD</strong> stands for <strong>Create, Read, Update, Delete</strong> — the four fundamental database operations corresponding to INSERT, SELECT, UPDATE, and DELETE SQL commands.`},
+
+  {phase:0,diff:'basic',topic:'Dictionaries',text:'Which of these correctly creates a dictionary comprehension?',
+   opts:['{x: x*2 for x in range(5)}','[x: x*2 for x in range(5)]','(x: x*2 for x in range(5))','dict(x, x*2 for x in range(5))'],
+   ans:0,expl:`Dictionary comprehensions use <strong>curly braces</strong> with a <code>key: value</code> pair: <code>{x: x*2 for x in range(5)}</code>. Square brackets create list comprehensions; parentheses create generators.`},
+
+  // Medium (10-14)
+  {phase:1,diff:'medium',topic:'NumPy',text:'What does this NumPy code compute?',
+   code:`import numpy as np\na = np.array([[1, 2],\n              [3, 4]])\nprint(a.T)`,
+   opts:['[[1, 3], [2, 4]]','[[4, 3], [2, 1]]','[[1, 2], [3, 4]]','[[2, 1], [4, 3]]'],
+   ans:0,expl:`<code>.T</code> is the <strong>transpose</strong> — rows become columns and vice versa. Row 0 <code>[1,2]</code> becomes column 0, row 1 <code>[3,4]</code> becomes column 1 → <strong>[[1,3],[2,4]]</strong>.`},
+
+  {phase:1,diff:'medium',topic:'OOP',text:'What is the output?',
+   code:`class Counter:\n    count = 0\n    def __init__(self):\n        Counter.count += 1\n\na = Counter()\nb = Counter()\nprint(Counter.count)`,
+   opts:['0','1','2','AttributeError: read-only'],
+   ans:2,expl:`<code>count</code> is a <strong>class variable</strong> shared across all instances. Each <code>__init__</code> increments it via <code>Counter.count += 1</code>. Two instances are created → <strong>2</strong>.`},
+
+  {phase:1,diff:'medium',topic:'Data Visualization',text:'Which Seaborn function best visualises the distribution of a single numerical variable?',
+   opts:['sns.barplot()','sns.histplot()','sns.lineplot()','sns.scatterplot()'],
+   ans:1,expl:`<code>sns.histplot()</code> shows the frequency distribution of a <strong>single numeric variable</strong> using bins. <code>barplot</code> compares categories, <code>lineplot</code> shows trends, <code>scatterplot</code> shows relationships between two variables.`},
+
+  {phase:1,diff:'medium',topic:'Web Scraping',text:'What does r.status_code return after a successful HTTP GET?',
+   code:`import requests\nr = requests.get('https://example.com')\nprint(r.status_code)`,
+   opts:['The full HTML body','200 if the request succeeded','The page title as a string','None — BeautifulSoup required'],
+   ans:1,expl:`<code>r.status_code</code> is the HTTP status code integer. A successful request returns <strong>200</strong>. Common codes: 404 (not found), 403 (forbidden), 500 (server error).`},
+
+  {phase:1,diff:'medium',topic:'Libraries',text:'What is the purpose of logging.basicConfig() in Python?',
+   opts:['Establishes a database connection','Configures the root logger\'s level and output format','Initialises a web server with default routes','Automatically creates a rotating log file'],
+   ans:1,expl:`<code>logging.basicConfig()</code> configures the <strong>root logger</strong> — sets minimum severity level (DEBUG, INFO, WARNING…), output format, and destination (console or file). It must be called before any logging output is produced.`},
+
+  // Hard (15-19)
+  {phase:2,diff:'hard',topic:'Python Basics / Lists',text:'What is the output?',
+   code:`import copy\ndata = {'a': [1, 2], 'b': [3, 4]}\nd2 = copy.copy(data)\nd2['a'].append(99)\nprint(data['a'])`,
+   opts:['[1, 2]','[1, 2, 99]','[99]','TypeError'],
+   ans:1,expl:`<code>copy.copy()</code> creates a <strong>shallow copy</strong> — a new dict, but the list values are the same objects. <code>d2['a']</code> and <code>data['a']</code> point to the same list. Appending 99 mutates both → <strong>[1, 2, 99]</strong>.`},
+
+  {phase:2,diff:'hard',topic:'OOP / Decorators',text:'What is the result of this decorator chain?',
+   code:`def double(f):\n    def w(x): return f(x) * 2\n    return w\n\ndef inc(f):\n    def w(x): return f(x) + 1\n    return w\n\n@double\n@inc\ndef val(x):\n    return x\n\nprint(val(3))`,
+   opts:['7','8','6','9'],
+   ans:1,expl:`Decorators apply bottom-up: <code>@inc</code> wraps <code>val</code> first → <code>inc_val(x) = x+1</code>. Then <code>@double</code> wraps that → <code>double(inc_val)(x) = (x+1)*2</code>. With x=3: (3+1)*2 = <strong>8</strong>.`},
+
+  {phase:2,diff:'hard',topic:'Dictionaries',text:'Which of these dictionary accesses will NOT raise an exception?',
+   opts:["d['key'] when key is absent","d.get('key') when key is absent","d['key'] with no default — raises or not","d['key'] — never raises, returns None"],
+   ans:1,expl:`<code>d.get('key')</code> returns <strong>None</strong> (or a specified default) when the key is absent — it <strong>never raises</strong> KeyError. <code>d['key']</code> raises KeyError for missing keys.`},
+
+  {phase:2,diff:'hard',topic:'Pandas',text:'What does this Pandas chain do?',
+   code:`df['score'].fillna(df['score'].median()).clip(0, 100)`,
+   opts:['Drops NaN rows, clips remaining to 0–100','Fills NaN with median, clips all values to 0–100','Replaces below-median with 0, above with 100','Raises ValueError: fillna and clip cannot be chained'],
+   ans:1,expl:`<code>fillna(median)</code> replaces all NaN values with the column median. <code>.clip(0, 100)</code> then constrains every value to the range [0, 100] — values below 0 become 0, above 100 become 100. These chain cleanly.`},
+
+  {phase:2,diff:'hard',topic:'OOP / Polymorphism',text:'What does this OOP snippet demonstrate?',
+   code:`class Animal:\n    def speak(self):\n        raise NotImplementedError\n\nclass Dog(Animal):\n    def speak(self):\n        return 'Woof'\n\nclass Cat(Animal):\n    def speak(self):\n        return 'Meow'\n\nfor a in [Dog(), Cat()]:\n    print(a.speak())`,
+   opts:['Encapsulation by hiding attributes','Polymorphism through method overriding','Multiple inheritance with C3 MRO','Composition of Animal objects'],
+   ans:1,expl:`Each subclass overrides <code>speak()</code> with its own behaviour. The loop calls the same <code>speak()</code> on different types — each responds differently. This is <strong>polymorphism via method overriding</strong>.`}
+],
+
+4: [
+  // Basic (0-9)
+  {phase:0,diff:'basic',topic:'Strings',text:'What will the following print?',
+   code:`x = '5'\ny = 5\nprint(x * y)`,
+   opts:['25','55555','TypeError: can\'t multiply str and int',"'5' * 5"],
+   ans:1,expl:`String repetition <code>'5' * 5</code> is valid in Python — it repeats the string 5 times → <strong>'55555'</strong>. This is different from numeric multiplication.`},
+
+  {phase:0,diff:'basic',topic:'OOP',text:'How does Python express class inheritance?',
+   opts:['class Child extends Parent:','class Child inherits Parent:','class Child implements Parent:','class Child(Parent):'],
+   ans:3,expl:`Python uses parentheses in the class definition: <code>class Child(Parent):</code>. Keywords like <code>extends</code> and <code>implements</code> are from Java — they don't exist in Python.`},
+
+  {phase:0,diff:'basic',topic:'Lists',text:'What is the output?',
+   code:`a = [1, 2, 3]\na.insert(1, 99)\nprint(a)`,
+   opts:['[99, 1, 2, 3]','[1, 99, 2, 3]','[1, 2, 99, 3]','[1, 2, 3, 99]'],
+   ans:1,expl:`<code>list.insert(index, value)</code> inserts <em>before</em> the specified index. <code>insert(1, 99)</code> inserts 99 before index 1 (which is currently 2) → <strong>[1, 99, 2, 3]</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Functions',text:"What does the 'global' keyword do inside a function?",
+   opts:['Creates a brand-new global variable','Declares that the name refers to the module-level variable','Makes the entire function accessible globally','Converts the variable type to match global scope'],
+   ans:1,expl:`<code>global x</code> inside a function tells Python that <code>x</code> refers to the <strong>module-level variable</strong>, not a new local one. Without it, assignment creates a local variable that shadows the global.`},
+
+  {phase:0,diff:'basic',topic:'Databases',text:'Which of these correctly connects to an SQLite database?',
+   opts:["import sqlite3; conn = sqlite3.open('db.sqlite')","import sqlite3; conn = sqlite3.connect('db.sqlite')","from sqlite3 import DB; db = DB('db.sqlite')","import database; db = database.connect('sqlite', 'db.sqlite')"],
+   ans:1,expl:`<code>sqlite3.connect('db.sqlite')</code> is the correct API. If the file doesn't exist, SQLite creates it. The <code>open()</code> method doesn't exist in sqlite3.`},
+
+  {phase:0,diff:'basic',topic:'Dictionaries',text:"What does print(len({'a':1, 'b':2, 'c':1})) output?",
+   opts:['2','3','6','1'],
+   ans:1,expl:`<code>len()</code> on a dictionary returns the <strong>number of key-value pairs</strong>. This dict has 3 keys: 'a', 'b', 'c' → <strong>3</strong>. Duplicate values don't affect the count; duplicate keys would.`},
+
+  {phase:0,diff:'basic',topic:'Exception Handling',text:"What happens to a finally block when 'break' is used inside a try block?",
+   opts:['The finally block is completely skipped','The loop exits and finally still executes normally','Python raises a BreakError inside the finally block','The break is silently ignored inside try'],
+   ans:1,expl:`<code>finally</code> runs <strong>no matter what</strong> — even if the <code>try</code> block exits via <code>break</code>, <code>continue</code>, <code>return</code>, or an exception. The loop still exits, and then finally executes.`},
+
+  {phase:0,diff:'basic',topic:'Lists',text:'What does this list comprehension produce?',
+   code:`result = [x**2 for x in range(6) if x % 2 != 0]\nprint(result)`,
+   opts:['[1, 9, 25]','[0, 4, 16]','[1, 4, 9, 16, 25]','[0, 1, 4, 9, 16, 25]'],
+   ans:0,expl:`<code>range(6)</code> = 0-5. The filter <code>x % 2 != 0</code> keeps odd numbers: 1, 3, 5. Squaring them: 1²=1, 3²=9, 5²=25 → <strong>[1, 9, 25]</strong>.`},
+
+  {phase:0,diff:'basic',topic:'Web Development',text:'What is Django primarily classified as?',
+   opts:['A minimal micro-framework like Flask','A full-stack framework with batteries included','A REST API-only library for JSON endpoints','A frontend JavaScript framework for SPAs'],
+   ans:1,expl:`Django is a <strong>full-stack, batteries-included framework</strong> — it ships with ORM, admin panel, authentication, form handling, and templating out of the box. Flask is the minimal micro-framework alternative.`},
+
+  {phase:0,diff:'basic',topic:'Functions',text:'Which Python keyword makes a function produce values lazily?',
+   opts:['return','async','yield','defer'],
+   ans:2,expl:`<code>yield</code> turns a function into a <strong>generator</strong>. Each time <code>next()</code> is called, execution resumes from the last <code>yield</code>. Values are produced one at a time — no list is built in memory.`},
+
+  // Medium (10-14)
+  {phase:1,diff:'medium',topic:'NumPy',text:'What is the output of this NumPy boolean indexing?',
+   code:`import numpy as np\na = np.array([1, 2, 3, 4])\nprint(a[a > 2])`,
+   opts:['[True, True]','[3, 4]','[False, False, True, True]','[1, 2]'],
+   ans:1,expl:`<code>a > 2</code> creates a boolean array <code>[F, F, T, T]</code>. Indexing with this mask selects only the <code>True</code> positions: elements at index 2 and 3 → <strong>[3, 4]</strong>.`},
+
+  {phase:1,diff:'medium',topic:'OOP',text:'What does this class property enforce?',
+   code:`class Temperature:\n    def __init__(self, c):\n        self._c = c\n\n    @property\n    def fahrenheit(self):\n        return self._c * 9/5 + 32`,
+   opts:['Allows direct assignment to fahrenheit','Makes fahrenheit a read-only computed property','Caches conversion result after first access','Converts on instantiation'],
+   ans:1,expl:`Without a <code>@fahrenheit.setter</code>, this <code>@property</code> is <strong>read-only</strong>. <code>obj.fahrenheit</code> computes and returns the conversion every time it's accessed — no caching, no assignment allowed.`},
+
+  {phase:1,diff:'medium',topic:'Web Scraping',text:'What does a Requests Session object provide over plain requests.get()?',
+   opts:['Auto JSON parsing and schema validation','Persistent headers, cookies, and connection settings across requests','Built-in multi-threaded dispatching','Integrated rate limiting and auto-retry'],
+   ans:1,expl:`A <code>requests.Session</code> maintains <strong>persistent state</strong> across requests — cookies, headers, and connection pooling are reused. Plain <code>requests.get()</code> creates a fresh connection each time with no cookie persistence.`},
+
+  {phase:1,diff:'medium',topic:'Data Visualization',text:'What will this Matplotlib format string produce?',
+   code:`import matplotlib.pyplot as plt\nplt.plot([1, 2, 3], [4, 1, 3], 'r--')\nplt.show()`,
+   opts:['A red bar chart','A red dashed line chart','A red scatter plot','A solid red line chart'],
+   ans:1,expl:`The format string <code>'r--'</code> specifies colour and line style: <code>'r'</code> = red, <code>'--'</code> = dashed line. So the result is a <strong>red dashed line chart</strong>.`},
+
+  {phase:1,diff:'medium',topic:'OOP',text:'What is the key distinction between aggregation and composition in OOP?',
+   opts:['Aggregation implies inheritance; composition does not','In composition, child object lifetime is independent of parent','In aggregation, child can exist independently; in composition it cannot','Aggregation and composition are interchangeable'],
+   ans:2,expl:`<strong>Aggregation</strong>: the child can exist independently of the parent (e.g., a Department passed into a Company — Department survives if Company is deleted). <strong>Composition</strong>: child's lifetime is tied to the parent — it cannot exist independently.`},
+
+  // Hard (15-19)
+  {phase:2,diff:'hard',topic:'Lists / Functions',text:'What does this function return?',
+   code:`def mystery(lst):\n    return lst.sort()\n\nresult = mystery([3, 1, 2])\nprint(result)`,
+   opts:['[1, 2, 3]','None','3','[3, 1, 2]'],
+   ans:1,expl:`<code>list.sort()</code> sorts <strong>in place</strong> and returns <code>None</code>. The function returns <code>lst.sort()</code> which is <code>None</code>. To return a sorted list, use <code>return sorted(lst)</code>.`},
+
+  {phase:2,diff:'hard',topic:'Lists',text:'Which creates a truly independent deep copy of a nested list?',
+   code:`import copy\na = [[1, 2], [3, 4]]`,
+   opts:['b = a','b = a[:]','b = list(a)','b = copy.deepcopy(a)'],
+   ans:3,expl:`<code>b = a</code> and <code>b = a[:]</code> and <code>list(a)</code> are all shallow copies — the inner lists are shared. <code>copy.deepcopy(a)</code> recursively copies all nested objects, creating a fully <strong>independent</strong> copy.`},
+
+  {phase:2,diff:'hard',topic:'Regex',text:'What does this regex pattern match?',
+   code:`import re\npattern = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'\nprint(bool(re.match(pattern, 'user.name+tag@example.co.uk')))`,
+   opts:['False — + in local part causes error','True — matches valid-looking email format','False — only .com domains matched','True — only because re.match is case-insensitive'],
+   ans:1,expl:`The pattern matches a valid email structure: local part with alphanumerics and special chars, <code>@</code>, domain, <code>.</code>, TLD with 2+ letters. The test address is valid → <strong>True</strong>. <code>re.match</code> is case-sensitive by default.`},
+
+  {phase:2,diff:'hard',topic:'Functions',text:'What is the output?',
+   code:`def f(x, lst=[]):\n    lst.append(x)\n    return lst\n\nprint(f(1))\nprint(f(2))\nprint(f(3, []))`,
+   opts:['[1] [2] [3]','[1] [1, 2] [3]','[1] [2] [2, 3]','[1] [1, 2] [1, 2, 3]'],
+   ans:1,expl:`Mutable default arguments are <strong>created once</strong> at function definition time and shared across calls. <code>f(1)</code> → [1]. <code>f(2)</code> reuses the same list → [1,2]. <code>f(3, [])</code> passes a fresh list → [3]. Classic Python gotcha!`},
+
+  {phase:2,diff:'hard',topic:'Libraries',text:'What will this code actually do at runtime?',
+   code:`import time\n\ndef slow(n):\n    time.sleep(n)\n    return n\n\nresults = [slow(1), slow(1), slow(1)]\nprint(sum(results))`,
+   opts:['Takes ~1 second total, prints 3','Takes ~3 seconds total, prints 3','Runs in parallel, returns instantly','Raises RuntimeError: no running event loop'],
+   ans:1,expl:`List literals evaluate left-to-right, <strong>sequentially</strong>. Each <code>slow(1)</code> blocks for 1 second — 3 calls = <strong>~3 seconds</strong> total. <code>sum([1,1,1]) = 3</code>. For parallelism, you'd need <code>concurrent.futures</code> or <code>asyncio</code>.`}
+]
+
+};
+
+/* ═══════════════════════════════════════
+   STATE
+═══════════════════════════════════════ */
+const state = {};
+[1,2,3,4].forEach(t => {
+  state[t] = { idx:0, score:0, answered:new Array(20).fill(null) };
+});
+
+const ROUNDS = ['🟢 Round 1 — Foundations','🟡 Round 2 — Intermediate','🔴 Round 3 — The Peak'];
+
+/* ═══════════════════════════════════════
+   TAB SWITCHER
+═══════════════════════════════════════ */
+function positionPill(){
+  const active = document.querySelector('.sw-btn.active');
+  const pill = document.getElementById('swPill');
+  if(!active||!pill) return;
+  pill.style.left   = active.offsetLeft+'px';
+  pill.style.top    = active.offsetTop+'px';
+  pill.style.width  = active.offsetWidth+'px';
+  pill.style.height = active.offsetHeight+'px';
+}
+function switchTest(t){
+  document.querySelectorAll('.sw-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.test-panel').forEach(p=>p.style.display='none');
+  document.getElementById('sw'+t).classList.add('active');
+  document.getElementById('tp'+t).style.display='block';
+  positionPill();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.addEventListener('load',()=>{ positionPill(); renderQ(1); renderQ(2); renderQ(3); renderQ(4); });
+window.addEventListener('resize',positionPill);
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(positionPill);
+
+/* ═══════════════════════════════════════
+   RENDER QUESTION
+═══════════════════════════════════════ */
+function renderQ(t){
+  const s = state[t];
+  const qs = TESTS[t];
+  const q = qs[s.idx];
+  const total = qs.length;
+
+  // Progress
+  const pct = ((s.idx+1)/total*100).toFixed(0);
+  document.getElementById('pb'+t).style.width = pct+'%';
+  document.getElementById('pt'+t).textContent = `Question ${s.idx+1} of ${total}`;
+  document.getElementById('st'+t).textContent = `Score: ${s.score}`;
+
+  // Round label
+  const rl = document.getElementById('rl'+t);
+  rl.textContent = ROUNDS[q.phase] || ROUNDS[0];
+
+  // Back btn
+  const bb = document.getElementById('bbtn'+t);
+  bb.style.display = s.idx > 0 ? '' : 'none';
+
+  // Next btn
+  const nb = document.getElementById('nbtn'+t);
+  nb.disabled = s.answered[s.idx] === null;
+  nb.textContent = s.idx === total-1 ? 'Finish →' : 'Next →';
+
+  // Build card
+  const diffClass = {basic:'diff-basic',medium:'diff-medium',hard:'diff-hard'}[q.diff] || 'diff-basic';
+  let html = `<div class="q-card">
+    <div class="q-num">Q${s.idx+1} <span class="q-diff ${diffClass}">${q.diff}</span><span class="q-topic">${q.topic}</span></div>
+    <div class="q-text">${q.text}</div>
+    ${q.code ? `<pre class="q-code">${q.code}</pre>` : ''}
+    <div class="options">`;
+
+  const keys = ['A','B','C','D'];
+  const userAns = s.answered[s.idx];
+  q.opts.forEach((opt,i)=>{
+    let cls = '';
+    if(userAns !== null){
+      if(i === q.ans) cls = 'correct';
+      else if(i === userAns) cls = 'wrong';
+    }
+    html += `<button class="opt-btn ${cls}" ${userAns!==null?'disabled':''} onclick="answer(${t},${i})">
+      <span class="opt-key">${keys[i]}</span>${opt}
+    </button>`;
+  });
+
+  html += `</div>`;
+  if(userAns !== null){
+    html += `<div class="expl show">${q.expl}</div>`;
+  }
+  html += `</div>`;
+
+  document.getElementById('qarea'+t).innerHTML = html;
+}
+
+/* ═══════════════════════════════════════
+   ANSWER
+═══════════════════════════════════════ */
+function answer(t, i){
+  const s = state[t];
+  if(s.answered[s.idx] !== null) return;
+  const q = TESTS[t][s.idx];
+  s.answered[s.idx] = i;
+  if(i === q.ans) s.score++;
+  renderQ(t);
+  // Enable next
+  document.getElementById('nbtn'+t).disabled = false;
+}
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
+function next(t){
+  const s = state[t];
+  if(s.answered[s.idx] === null) return;
+  if(s.idx < TESTS[t].length-1){
+    s.idx++;
+    renderQ(t);
+    document.getElementById('qarea'+t).scrollIntoView({behavior:'smooth',block:'start'});
+  } else {
+    showResults(t);
+  }
+}
+function prev(t){
+  const s = state[t];
+  if(s.idx > 0){
+    s.idx--;
+    renderQ(t);
+  }
+}
+
+/* ═══════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════ */
+function showResults(t){
+  document.getElementById('qa'+t).style.display = 'none';
+  const ra = document.getElementById('ra'+t);
+  ra.classList.add('active');
+
+  const s = state[t];
+  const qs = TESTS[t];
+  const score = s.score;
+  const total = qs.length;
+  const pct = score/total;
+
+  // Ring animation
+  const circumference = 490;
+  const offset = circumference - pct * circumference;
+  setTimeout(()=>{ document.getElementById('ring'+t).style.strokeDashoffset = offset; },100);
+
+  document.getElementById('rb'+t).textContent = score;
+
+  // Verdict
+  let v,vs;
+  if(pct>=.9){v='🏆 Outstanding!';vs='You nailed it. Exam-ready.';}
+  else if(pct>=.75){v='⭐ Strong Performance';vs='Great work — review the few you missed.';}
+  else if(pct>=.6){v='💪 Solid Effort';vs='Good foundation. Revisit the hard questions.';}
+  else if(pct>=.4){v='📚 Keep Practicing';vs='Review the explanations and retry.';}
+  else{v='🔄 Needs Review';vs='Go through the explanations carefully.';}
+  document.getElementById('vrd'+t).textContent = v;
+  document.getElementById('vsub'+t).textContent = vs;
+
+  // Phase stats
+  const phases = [{name:'🟢 Foundations',q:[]},{name:'🟡 Intermediate',q:[]},{name:'🔴 The Peak',q:[]}];
+  qs.forEach((q,i)=>phases[q.phase].q.push({q,i,ans:s.answered[i]}));
+  const colors = ['#00e5a0','#f59e0b','#ff4f6e'];
+  let psHtml = '';
+  phases.forEach((ph,pi)=>{
+    if(!ph.q.length) return;
+    const correct = ph.q.filter(x=>x.ans===x.q.ans).length;
+    const total = ph.q.length;
+    const pct2 = total ? correct/total : 0;
+    psHtml += `<div class="phase-stat">
+      <div class="ps-name">${ph.name}</div>
+      <div class="ps-score" style="color:${colors[pi]}">${correct}/${total}</div>
+      <div class="ps-bar"><div class="ps-fill" style="width:${pct2*100}%;background:${colors[pi]}"></div></div>
+    </div>`;
+  });
+  document.getElementById('ps'+t).innerHTML = psHtml;
+
+  // Review list
+  let rvHtml = '';
+  qs.forEach((q,i)=>{
+    const userAns = s.answered[i];
+    const correct = userAns === q.ans;
+    rvHtml += `<div class="rev-item ${correct?'r-ok':'r-bad'}">
+      <div class="rev-top">
+        <div class="rev-badge">${correct?'✓':'✗'}</div>
+        <div class="rev-q">${q.text}${q.code?`<br><code style="font-size:.75em;opacity:.7">${q.code.split('\n')[0]}…</code>`:''}</div>
+      </div>
+      <div class="rev-detail">
+        ${!correct?`<span class="lbl ya">Your answer:</span>${q.opts[userAns]??'—'}<br>`:''}
+        <span class="lbl ca">Correct:</span>${q.opts[q.ans]}
+        <div class="expl-t">${q.expl}</div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('rvlist'+t).innerHTML = rvHtml;
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ═══════════════════════════════════════
+   RETAKE
+═══════════════════════════════════════ */
+function retake(t){
+  state[t] = {idx:0, score:0, answered:new Array(20).fill(null)};
+  document.getElementById('ra'+t).classList.remove('active');
+  document.getElementById('qa'+t).style.display = 'block';
+  renderQ(t);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
